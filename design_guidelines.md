@@ -1,13 +1,14 @@
-# Design Guidelines: Scientific Research Discovery Platform
+# Design Guidelines: MyScience Research Discovery Platform
 
 ## Design Approach
 
-**Reference-Based with System Foundation**
-Drawing inspiration from content discovery platforms (Netflix, Medium, Notion) adapted for scientific research credibility. Balancing engaging content presentation with professional academic standards.
+**Modern & Energetic with Academic Credibility**
+Drawing inspiration from content discovery platforms (Netflix, Spotify, Medium) adapted for early career researchers. Balancing vibrant, joyful design with professional academic standards.
 
 **Core Principles:**
-- Credibility-first: Clean, professional aesthetics that command trust in academic context
-- Content-forward: Design serves discovery, never distracts from research
+- Fresh & Modern: Vibrant colors and contemporary design that energizes research discovery
+- Young Professional: Appeals to early career researchers with confidence and optimism
+- Content-forward: Design serves discovery, celebrates research
 - Frictionless navigation: Minimal clicks to value, clear pathways back
 
 ---
@@ -51,7 +52,8 @@ Core spacing units: **2, 4, 6, 8, 12, 16** (as in p-2, gap-4, space-y-6, etc.)
 
 ### Browser Extension Button
 - **Floating Badge:** Fixed bottom-right (bottom-6 right-6), rounded-full, shadow-lg
-- **Integrated Nav Button:** Matches host site's navigation styling, subtle branded indicator
+- **Brand Name:** MyScience
+**Integrated Nav Button:** Matches host site's navigation styling, subtle branded indicator
 - **Size:** 48px × 48px minimum (touch-friendly), 56px × 56px recommended
 - **Icon:** Heroicons "home" or "academic-cap" via CDN
 - **States:** Clear focus ring (ring-4), subtle scale on hover (scale-105)

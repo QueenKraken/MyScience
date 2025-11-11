@@ -25,7 +25,7 @@ export default function ArticleCard({
   onView,
 }: ArticleCardProps) {
   return (
-    <Card className="p-6 hover-elevate" data-testid="card-article">
+    <Card className="p-6 hover-elevate border-l-4 border-l-primary/30" data-testid="card-article">
       <div className="space-y-4">
         <div>
           <h2 className="font-serif text-xl font-semibold leading-relaxed mb-2" data-testid="text-article-title">

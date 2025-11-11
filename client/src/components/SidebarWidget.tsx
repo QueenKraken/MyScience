@@ -8,7 +8,7 @@ interface SidebarWidgetProps {
 
 export function SidebarWidget({ title, children }: SidebarWidgetProps) {
   return (
-    <Card className="p-6">
+    <Card className="p-6 border-t-2 border-t-primary/40">
       <h3 className="font-semibold text-lg mb-4" data-testid="text-widget-title">
         {title}
       </h3>
