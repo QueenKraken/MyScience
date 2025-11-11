@@ -1,0 +1,124 @@
+MyScience Visual Design Guide
+
+Version 1.0 – Design System Overview
+MyScience: Netflix for Science Research
+A platform where researchers discover, connect, and collaborate through an open, intelligent feed.
+
+🧭 1. Design Language Overview
+
+MyScience’s design is modern, fluid, and human. It rejects the sterile, institutional look of traditional journal sites.
+It’s about curiosity, motion, and identity — giving researchers a digital home that feels alive and personal.
+
+✦ Guiding Principles
+Principle	Description
+Human-first	Showcase the researcher, not the publication. Profiles and feeds are alive with discovery.
+Minimal & intuitive	Every element earns its place. Use space, color, and typography thoughtfully.
+Accessible by default	WCAG 2.2 AA minimum; clarity over complexity.
+Emotionally intelligent	Subtle animation, warm highlights, approachable language.
+Open & adaptive	Responsive, mobile-friendly, and easily integrated with open data sources.
+🎨 2. Color System
+Use	Hex	Description	Accessibility
+Primary	#0078FF	Electric science blue – main action color	✅
+Secondary	#FF4F81	Coral pink – highlights engagement, likes, badges	✅
+Accent	#00E0A1	Bright green – progress, success, positive states	✅
+Background (Light)	#F9FAFB	Neutral off-white – modern and readable	✅
+Background (Dark)	#0F1117	Deep grey – dark mode equivalent	✅
+Text (Light Mode)	#111827	Rich near-black for content	✅
+Text (Dark Mode)	#E5E7EB	Muted white for readability	✅
+Error/Alert	#E11D48	Accessible red for warnings	✅
+
+Tip:
+Use color sparingly to signal intent. MyScience should feel calm, with pops of vibrancy only where user attention is needed (calls to action, badges, or notifications).
+
+✍️ 3. Typography
+Fonts
+
+Headings: Poppins
+ — geometric, modern, approachable
+
+Use weights 600–700
+
+Body Text: Inter
+ — digital-native, clean, easy to read
+
+Use weights 400–500
+
+Size hierarchy
+Role	Example	Size
+H1	“Discover research that moves you.”	2.25rem / 36px
+H2	Section titles	1.5rem / 24px
+H3	Subheadings / card titles	1.125rem / 18px
+Body	Standard text	1rem / 16px
+Small	Metadata, timestamps	0.875rem / 14px
+Style notes
+
+Line height: 1.5–1.75 for readability
+
+Letter spacing: 0.01–0.03em
+
+Avoid uppercase headings; prefer sentence case for warmth
+
+Use bold only for emphasis, never as decoration
+
+🧩 4. Components Overview
+Component	Description	Visual Style
+Feed Card	Displays research summary, image, and actions (like, cite, share)	Rounded corners (1rem), soft shadow, hover lift
+Profile Card	Researcher avatar, name, field tags, engagement metrics	Minimal layout with gentle color accent
+Navigation Bar	Top or side navigation, responsive collapse	Floating feel with subtle background blur
+Action Button	Primary CTAs (e.g., “Follow”, “Share”, “Save”)	Blue primary background, white text, 8px padding
+Badge Icon	Gamified identity (lifespan animal theme)	Minimal line art, animated transitions
+💫 5. Motion & Interaction
+Type	Example	Duration
+Hover scale	Feed card subtly enlarges (scale 1.02)	150 ms
+Fade-in	New content items appear	250 ms
+Color shift	Button hover darkens slightly	100 ms
+Modal slide	Dialogs enter from bottom or side	200 ms
+
+Principle: Motion should guide attention, not distract.
+Prefer micro-interactions that reward curiosity.
+
+🌗 6. Accessibility Standards
+
+WCAG 2.2 AA minimum
+
+Minimum text size = 16 px
+
+Keyboard navigable components
+
+Focus indicators always visible
+
+Sufficient color contrast verified by automated tools
+
+Use aria-label for all icons
+
+Accessibility is not optional — it’s part of the design language.
+
+🧠 7. Personality Keywords
+
+When unsure about a design choice, align it to these five words:
+
+Keyword	Interpretation
+Curious	Inspires exploration and connection
+Clear	Intuitive to navigate and visually uncluttered
+Connected	Emphasizes collaboration and community
+Credible	Feels professional without being corporate
+Playful	Injects lightness and joy into discovery
+🧱 8. Implementation Hints (for Replit)
+
+Use Tailwind CSS or CSS variables for consistency (--color-primary, --radius-card, etc.)
+
+Set global styles for typography and background at root level
+
+Keep components modular: /components/feedCard.js, /components/profileCard.js
+
+Integrate Framer Motion
+ if using React for easy micro-animations
+
+Include both light/dark themes early to future-proof UI
+
+🚀 9. Design Motto
+
+“Science should look as exciting as discovery feels.”
+
+MyScience is not a journal site.
+It’s a social-discovery space where open research meets next-gen user experience.
