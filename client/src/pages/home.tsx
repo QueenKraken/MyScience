@@ -166,6 +166,10 @@ export default function HomePage() {
   };
 
   // Combine saved articles with mock recommendations (todo: replace with real recommendations API)
+  // Deduplicate: exclude mock articles that are already saved (match by title)
+  const savedTitles = new Set(savedArticles.map(a => a.title));
+  const uniqueMockArticles = mockArticles.filter(mock => !savedTitles.has(mock.title));
+  
   const displayArticles = showContent ? [
     // Show saved articles first
     ...savedArticles.map(saved => ({
@@ -180,8 +184,8 @@ export default function HomePage() {
       externalUrl: saved.externalUrl || undefined,
       isSaved: true,
     })),
-    // Then show mock recommendations
-    ...mockArticles.map(mock => ({
+    // Then show unique mock recommendations (not already saved)
+    ...uniqueMockArticles.map(mock => ({
       ...mock,
       isSaved: false,
     })),
