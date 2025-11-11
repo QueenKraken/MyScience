@@ -65,6 +65,7 @@ export const updateUserProfileSchema = createInsertSchema(users).omit({
 
 export const insertSavedArticleSchema = createInsertSchema(savedArticles).omit({
   id: true,
+  userId: true, // userId is injected server-side from authenticated session
   savedAt: true,
 });
 

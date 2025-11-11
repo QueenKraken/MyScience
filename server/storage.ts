@@ -18,7 +18,7 @@ export interface IStorage {
   // Saved Articles methods
   getSavedArticles(userId: string): Promise<SavedArticle[]>;
   getSavedArticle(id: string): Promise<SavedArticle | undefined>;
-  saveArticle(article: InsertSavedArticle): Promise<SavedArticle>;
+  saveArticle(article: InsertSavedArticle & { userId: string }): Promise<SavedArticle>;
   removeSavedArticle(id: string): Promise<boolean>;
 }
 
@@ -30,12 +30,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
+    const insertData = {
+      id: userData.id,
+      email: userData.email,
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      profileImageUrl: userData.profileImageUrl,
+      orcid: userData.orcid,
+      scietyId: userData.scietyId,
+      bio: userData.bio,
+      subjectAreas: userData.subjectAreas as string[] | null,
+    };
+    
     const [user] = await db
       .insert(users)
-      .values({
-        ...userData,
-        subjectAreas: userData.subjectAreas || null,
-      })
+      .values(insertData)
       .onConflictDoUpdate({
         target: users.id,
         set: {
@@ -46,7 +55,7 @@ export class DatabaseStorage implements IStorage {
           orcid: userData.orcid,
           scietyId: userData.scietyId,
           bio: userData.bio,
-          subjectAreas: userData.subjectAreas || null,
+          subjectAreas: userData.subjectAreas as string[] | null,
           updatedAt: new Date(),
         },
       })
@@ -55,18 +64,19 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateUserProfile(id: string, updates: Partial<UpsertUser>): Promise<User | undefined> {
+    const updateData: any = { updatedAt: new Date() };
+    
+    if (updates.firstName !== undefined) updateData.firstName = updates.firstName;
+    if (updates.lastName !== undefined) updateData.lastName = updates.lastName;
+    if (updates.profileImageUrl !== undefined) updateData.profileImageUrl = updates.profileImageUrl;
+    if (updates.orcid !== undefined) updateData.orcid = updates.orcid;
+    if (updates.scietyId !== undefined) updateData.scietyId = updates.scietyId;
+    if (updates.bio !== undefined) updateData.bio = updates.bio;
+    if (updates.subjectAreas !== undefined) updateData.subjectAreas = updates.subjectAreas as string[] | null;
+    
     const [user] = await db
       .update(users)
-      .set({
-        firstName: updates.firstName,
-        lastName: updates.lastName,
-        profileImageUrl: updates.profileImageUrl,
-        orcid: updates.orcid,
-        scietyId: updates.scietyId,
-        bio: updates.bio,
-        subjectAreas: updates.subjectAreas || null,
-        updatedAt: new Date(),
-      })
+      .set(updateData)
       .where(eq(users.id, id))
       .returning();
     return user;
@@ -90,13 +100,18 @@ export class DatabaseStorage implements IStorage {
     return article;
   }
 
-  async saveArticle(insertArticle: InsertSavedArticle): Promise<SavedArticle> {
+  async saveArticle(articleData: InsertSavedArticle & { userId: string }): Promise<SavedArticle> {
     const [article] = await db
       .insert(savedArticles)
       .values({
-        ...insertArticle,
-        authors: insertArticle.authors || [],
-        tags: insertArticle.tags || null,
+        userId: articleData.userId,
+        title: articleData.title,
+        authors: articleData.authors as string[],
+        journal: articleData.journal,
+        publicationDate: articleData.publicationDate,
+        abstract: articleData.abstract,
+        tags: articleData.tags as string[] | null,
+        externalUrl: articleData.externalUrl,
       })
       .returning();
     return article;

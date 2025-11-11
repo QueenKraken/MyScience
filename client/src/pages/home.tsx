@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import AppHeader from "@/components/AppHeader";
 import HeroSection from "@/components/HeroSection";
@@ -13,59 +13,34 @@ import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import type { UserProfile, SavedArticle } from "@shared/schema";
-
-// Get or create user ID in localStorage
-function getUserId(): string {
-  let userId = localStorage.getItem('myscience_user_id');
-  if (!userId) {
-    userId = 'user_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('myscience_user_id', userId);
-  }
-  return userId;
-}
+import { useAuth } from "@/hooks/useAuth";
+import type { User, SavedArticle } from "@shared/schema";
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const { toast } = useToast();
+  const { user, isLoading: isLoadingAuth } = useAuth();
   
-  // Get URL parameters for return navigation and user ID
+  // Get URL parameters for return navigation
   const urlParams = new URLSearchParams(window.location.search);
   const returnUrl = urlParams.get("return") || undefined;
   const returnSite = urlParams.get("site") || "original site";
-  const urlUserId = urlParams.get("user");
-  
-  // Use user ID from URL if available, otherwise from localStorage
-  const userId = urlUserId || getUserId();
-  
-  // Sync user ID to localStorage if it came from URL
-  useEffect(() => {
-    if (urlUserId && urlUserId !== localStorage.getItem('myscience_user_id')) {
-      localStorage.setItem('myscience_user_id', urlUserId);
-    }
-  }, [urlUserId]);
-
-  // Fetch user profile
-  const { data: userProfile, isLoading: isLoadingProfile } = useQuery<UserProfile>({
-    queryKey: ['/api/user', userId],
-  });
 
   // Fetch saved articles
   const { data: savedArticles = [], isLoading: isLoadingSaved } = useQuery<SavedArticle[]>({
-    queryKey: ['/api/user', userId, 'saved-articles'],
+    queryKey: ['/api/saved-articles'],
+    enabled: !!user,
   });
 
   // Save article mutation
   const saveArticleMutation = useMutation({
     mutationFn: async (article: any) => {
-      const response = await fetch(`/api/saved-articles`, {
+      const response = await fetch('/api/saved-articles', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
-          userId,
           title: article.title,
           authors: article.authors,
           journal: article.journal,
@@ -75,9 +50,7 @@ export default function HomePage() {
           externalUrl: article.externalUrl,
         }),
       });
-      if (!response.ok) {
-        throw new Error('Failed to save article');
-      }
+      if (!response.ok) throw new Error('Failed to save article');
       return response.json();
     },
     onSuccess: () => {
@@ -85,7 +58,7 @@ export default function HomePage() {
         title: "Article saved",
         description: "Added to your saved articles",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/user', userId, 'saved-articles'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/saved-articles'] });
     },
     onError: () => {
       toast({
@@ -149,7 +122,7 @@ export default function HomePage() {
     { action: "Connected ORCID", time: "Yesterday" },
   ];
 
-  const hasConnectedOrcid = !!userProfile?.orcid;
+  const hasConnectedOrcid = !!user?.orcid;
   // Show content if user has ORCID, saved articles, OR if we have recommendations to show
   const showContent = hasConnectedOrcid || savedArticles.length > 0 || mockArticles.length > 0;
 
@@ -221,13 +194,13 @@ export default function HomePage() {
       
       <main>
         <HeroSection 
-          userName={userProfile?.name || undefined}
+          userName={user?.firstName || undefined}
           savedCount={savedArticles.length}
           recommendationsCount={mockArticles.length}
         />
 
         <div className="max-w-7xl mx-auto px-6 pb-12">
-          {isLoadingProfile || isLoadingSaved ? (
+          {isLoadingAuth || isLoadingSaved ? (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3 space-y-6">
                 <Skeleton className="h-10 w-full" />
@@ -323,7 +296,7 @@ export default function HomePage() {
 
               <aside className="space-y-6">
                 <ResearcherProfileCard
-                  userName={userProfile?.name || null}
+                  userName={user?.firstName || null}
                   savedCount={savedArticles.length}
                   readThisWeek={savedArticles.length}
                   topTopics={mockTopics.slice(0, 3).map(t => t.name)}
