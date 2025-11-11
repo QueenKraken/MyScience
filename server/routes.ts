@@ -1,46 +1,38 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserProfileSchema, insertSavedArticleSchema } from "@shared/schema";
+import { setupAuth, isAuthenticated } from "./replitAuth";
+import { insertSavedArticleSchema, updateUserProfileSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // User Profile routes
-  app.get("/api/user/:userId", async (req, res) => {
+  // Auth middleware (Replit Auth integration)
+  await setupAuth(app);
+
+  // Auth routes
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const { userId } = req.params;
-      const profile = await storage.getUserProfile(userId);
-      
-      if (!profile) {
-        // Create a new profile for first-time users
-        const newProfile = await storage.createUserProfile({
-          id: userId,
-          name: null,
-          orcid: null,
-          scietyId: null,
-          preferences: null,
-        });
-        return res.json(newProfile);
-      }
-      
-      res.json(profile);
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
     } catch (error) {
-      console.error("Error fetching user profile:", error);
-      res.status(500).json({ error: "Failed to fetch user profile" });
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 
-  app.put("/api/user/:userId", async (req, res) => {
+  // Update user profile (protected)
+  app.put("/api/profile", isAuthenticated, async (req: any, res) => {
     try {
-      const { userId } = req.params;
-      const updates = insertUserProfileSchema.partial().parse(req.body);
+      const userId = req.user.claims.sub;
+      const updates = updateUserProfileSchema.parse(req.body);
       
-      const profile = await storage.updateUserProfile(userId, updates);
-      if (!profile) {
+      const user = await storage.updateUserProfile(userId, updates);
+      if (!user) {
         return res.status(404).json({ error: "User profile not found" });
       }
       
-      res.json(profile);
+      res.json(user);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ error: "Invalid profile data", details: error.errors });
@@ -50,10 +42,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Saved Articles routes
-  app.get("/api/user/:userId/saved-articles", async (req, res) => {
+  // Saved Articles routes (protected)
+  app.get("/api/saved-articles", isAuthenticated, async (req: any, res) => {
     try {
-      const { userId } = req.params;
+      const userId = req.user.claims.sub;
       const articles = await storage.getSavedArticles(userId);
       res.json(articles);
     } catch (error) {
@@ -62,9 +54,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/saved-articles", async (req, res) => {
+  app.post("/api/saved-articles", isAuthenticated, async (req: any, res) => {
     try {
-      const articleData = insertSavedArticleSchema.parse(req.body);
+      const userId = req.user.claims.sub;
+      const articleData = insertSavedArticleSchema.parse({
+        ...req.body,
+        userId,
+      });
       const article = await storage.saveArticle(articleData);
       res.status(201).json(article);
     } catch (error) {
@@ -76,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/saved-articles/:articleId", async (req, res) => {
+  app.delete("/api/saved-articles/:articleId", isAuthenticated, async (req: any, res) => {
     try {
       const { articleId } = req.params;
       const deleted = await storage.removeSavedArticle(articleId);
