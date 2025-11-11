@@ -96,7 +96,7 @@ MyScience draws inspiration from modern content platforms:
 - **Are.na**: Elegant minimalism, content organization
 - **Linear**: Calm productivity, keyboard shortcuts
 
-### UI Features (Slice 1 & 2 Complete)
+### UI Features (Slices 1-3 Complete)
 
 **Human-First Design (Slice 1)**
 - ResearcherProfileCard showcases the person, not just publications
@@ -110,6 +110,14 @@ MyScience draws inspiration from modern content platforms:
 - Hover tooltips on all action buttons for guidance
 - Smooth 300ms transitions (Notion-inspired)
 - Clean, minimal expand/collapse affordances
+
+**Discovery Hub (Slice 3)**
+- "For You" section header (Spotify-inspired)
+- Topic filter pills with toggle functionality
+- Multi-select filtering (logical OR - show articles matching ANY selected topic)
+- Dynamic "Clear filters" button
+- Filter pills: Gene Editing, Climate Change, Machine Learning, CRISPR, Ethics
+- Badge interactions with hover-elevate effects
 
 ### Key Principles
 - **Human-first**: Showcase researchers, not just papers
