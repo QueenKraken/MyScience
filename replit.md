@@ -75,22 +75,48 @@ The project delivers a working prototype with the following components:
 5. User can save articles, browse recommendations
 6. "Return to [site]" button takes user back to original article
 
-## Design System
+## Design System (November 2025 Refresh)
 
 ### Brand Colors
-- **Primary**: Vibrant purple gradient (#8b5cf6 → #a855f7)
-- **Accent**: Pink/purple tones for energy and freshness
-- **Base**: Grey tones for professional credibility
+- **Primary**: Electric blue (#0078FF) - Energy and discovery
+- **Accent 1**: Coral pink (#FF4F81) - Warmth and engagement  
+- **Accent 2**: Bright green (#00E0A1) - Growth and fresh ideas
+- **Base**: Clean greys for professional credibility
 
 ### Typography
-- **Sans**: Inter - Clean, modern for body text
-- **Serif**: Source Serif 4 - Academic credibility for article titles
+- **Headings**: Poppins - Modern, friendly, energetic
+- **Body**: Inter - Clean, readable for extended reading
+- **Article Titles**: Source Serif 4 - Academic credibility
+
+### Design Inspiration (Mood Board)
+MyScience draws inspiration from modern content platforms:
+- **Notion**: Progressive disclosure, generous white space, subtle interactions
+- **Read.cv**: Human-first profiles, typography-forward design
+- **Spotify**: Discovery-focused layout, inline actions, personalized feeds
+- **Are.na**: Elegant minimalism, content organization
+- **Linear**: Calm productivity, keyboard shortcuts
+
+### UI Features (Slice 1 & 2 Complete)
+
+**Human-First Design (Slice 1)**
+- ResearcherProfileCard showcases the person, not just publications
+- Live stats: saved articles count, weekly reading time
+- Interest badges showing top 3 research topics
+- Inline article actions (Save, Share, Cite, Read)
+- Real anchor links that open in new tabs
+
+**Progressive Disclosure (Slice 2)**  
+- Expandable abstracts with "Read more/less" (200+ characters)
+- Hover tooltips on all action buttons for guidance
+- Smooth 300ms transitions (Notion-inspired)
+- Clean, minimal expand/collapse affordances
 
 ### Key Principles
-- Fresh & modern for early career researchers
-- High energy with gradient accents
-- Professional academic credibility
-- Full accessibility compliance (WCAG 2.1 AA)
+- **Human-first**: Showcase researchers, not just papers
+- **Progressive disclosure**: Reveal complexity gradually
+- **Reduce friction**: Inline actions, no modals
+- **Modern & fresh**: Clean spacing, subtle animations
+- **Accessibility**: WCAG 2.1 AA compliance, keyboard navigation
 
 ## Installation & Setup
 
