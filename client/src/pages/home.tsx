@@ -7,6 +7,7 @@ import EmptyState from "@/components/EmptyState";
 import { TopicsWidget, RecentActivityWidget } from "@/components/SidebarWidget";
 import { ResearcherProfileCard } from "@/components/ResearcherProfileCard";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +27,7 @@ function getUserId(): string {
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const { toast } = useToast();
   
   // Get URL parameters for return navigation and user ID
@@ -185,14 +187,29 @@ export default function HomePage() {
     })),
   ] : [];
 
-  // Filter by search query
-  const filteredArticles = searchQuery
-    ? displayArticles.filter(article =>
-        article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        article.abstract.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        article.authors.some(author => author.toLowerCase().includes(searchQuery.toLowerCase()))
-      )
-    : displayArticles;
+  // Filter by search query and selected topics
+  const filteredArticles = displayArticles.filter(article => {
+    // Filter by search query
+    const matchesSearch = !searchQuery || 
+      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      article.abstract.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      article.authors.some(author => author.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    // Filter by selected topics (if any topics are selected)
+    const matchesTopics = selectedTopics.length === 0 || 
+      article.tags.some(tag => selectedTopics.includes(tag));
+    
+    return matchesSearch && matchesTopics;
+  });
+
+  // Toggle topic filter
+  const toggleTopic = (topic: string) => {
+    setSelectedTopics(prev => 
+      prev.includes(topic) 
+        ? prev.filter(t => t !== topic)
+        : [...prev, topic]
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -234,6 +251,40 @@ export default function HomePage() {
                   />
                 </div>
 
+                {/* For You Section - Spotify style */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="font-heading text-2xl font-bold" data-testid="heading-for-you">
+                      For You
+                    </h2>
+                    {selectedTopics.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedTopics([])}
+                        data-testid="button-clear-filters"
+                      >
+                        Clear filters
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Topic Filter Pills */}
+                  <div className="flex flex-wrap gap-2" data-testid="container-topic-filters">
+                    {mockTopics.map((topic) => (
+                      <Badge
+                        key={topic.name}
+                        variant={selectedTopics.includes(topic.name) ? "default" : "outline"}
+                        className="cursor-pointer hover-elevate active-elevate-2 transition-all"
+                        onClick={() => toggleTopic(topic.name)}
+                        data-testid={`filter-topic-${topic.name.toLowerCase().replace(/\s+/g, '-')}`}
+                      >
+                        {topic.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
                 {filteredArticles.length > 0 ? (
                   <div className="space-y-6">
                     {filteredArticles.map((article) => (
@@ -255,7 +306,13 @@ export default function HomePage() {
                 ) : (
                   <EmptyState
                     title="No articles found"
-                    description={`No articles match "${searchQuery}". Try a different search term.`}
+                    description={
+                      selectedTopics.length > 0
+                        ? `No articles match the selected topics. Try different filters.`
+                        : searchQuery
+                        ? `No articles match "${searchQuery}". Try a different search term.`
+                        : "No articles available."
+                    }
                   />
                 )}
               </div>
