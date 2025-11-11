@@ -44,13 +44,19 @@ The extension consists of:
 
 ## Configuration
 
-The MyScience web app URL is set in `content.js`:
+The MyScience web app URL is configured in `content.js`:
 
 ```javascript
-const MYSCIENCE_URL = 'http://localhost:5000';
+const MYSCIENCE_URL = 'https://workspace.ashaw7.replit.dev';
 ```
 
-For production, update this to your deployed MyScience URL.
+**Current Setup**: The extension is configured to connect to the Replit development environment. This allows you to:
+- Demonstrate the extension to others
+- Continue iterating and developing
+- Test with real users without public deployment
+- Changes to the web app reflect immediately
+
+**For Production**: When ready to publish, update this URL to your published Replit deployment (e.g., `https://your-app.replit.app`).
 
 ## Browser Compatibility
 

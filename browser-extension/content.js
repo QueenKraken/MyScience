@@ -5,7 +5,7 @@
   'use strict';
 
   // Configuration
-  const MYSCIENCE_URL = 'http://localhost:5000';
+  const MYSCIENCE_URL = 'https://workspace.ashaw7.replit.dev';
   
   // Get current site name for return tracking
   function getSiteName() {

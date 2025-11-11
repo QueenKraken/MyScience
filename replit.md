@@ -147,10 +147,12 @@ User IDs are stored in localStorage as `myscience_user_id`. This provides basic 
 - **Across Server Restarts**: Data is lost (in-memory storage limitation)
 - **End-to-End Testing**: Verified complete flow from extension → save article → reload → persistence
 
-### Browser Extension Development
+### Browser Extension Configuration
 - Extension uses Manifest V3 for Chrome/Edge/Firefox compatibility
-- Content script URL is hardcoded to `http://localhost:5000` - update for production
+- Currently configured to use Replit development URL: `https://workspace.ashaw7.replit.dev`
+- This allows for demonstrations and testing without public deployment
 - Icons can be generated using `browser-extension/create-icons.html`
+- See `DEMO_GUIDE.md` for demonstration instructions
 
 ## Open Source & Accessibility
 - All code is designed for open source release
