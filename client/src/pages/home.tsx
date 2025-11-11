@@ -133,13 +133,13 @@ export default function HomePage() {
     },
   ];
 
-  // todo: remove mock functionality
+  // todo: remove mock functionality - topics aligned with actual article tags
   const mockTopics = [
     { name: "Gene Editing", count: 23 },
-    { name: "Climate Science", count: 18 },
-    { name: "Neuroscience", count: 15 },
-    { name: "Quantum Computing", count: 12 },
-    { name: "Immunology", count: 9 },
+    { name: "Climate Change", count: 18 },
+    { name: "Machine Learning", count: 15 },
+    { name: "CRISPR", count: 12 },
+    { name: "Ethics", count: 9 },
   ];
 
   // todo: remove mock functionality
