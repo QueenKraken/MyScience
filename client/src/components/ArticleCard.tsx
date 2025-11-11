@@ -25,22 +25,22 @@ export default function ArticleCard({
   onView,
 }: ArticleCardProps) {
   return (
-    <Card className="p-6 hover-elevate border-l-4 border-l-primary/30" data-testid="card-article">
-      <div className="space-y-4">
+    <Card className="p-6 hover-lift animate-fade-in shadow-sm" data-testid="card-article" style={{ boxShadow: 'var(--shadow-sm)' }}>
+      <div className="space-y-5">
         <div>
-          <h2 className="font-serif text-xl font-semibold leading-relaxed mb-2" data-testid="text-article-title">
+          <h3 className="font-heading text-xl font-semibold leading-relaxed mb-3" data-testid="text-article-title">
             {title}
-          </h2>
+          </h3>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span data-testid="text-authors">{authors.join(", ")}</span>
+            <span data-testid="text-authors" className="line-clamp-1">{authors.join(", ")}</span>
             <span>•</span>
-            <span data-testid="text-journal" className="font-medium">{journal}</span>
+            <span data-testid="text-journal" className="font-medium text-foreground/70">{journal}</span>
             <span>•</span>
             <span data-testid="text-date">{date}</span>
           </div>
         </div>
 
-        <p className="text-base leading-relaxed line-clamp-3" data-testid="text-abstract">
+        <p className="text-base leading-relaxed line-clamp-3 text-foreground/80" data-testid="text-abstract">
           {abstract}
         </p>
 
@@ -54,11 +54,12 @@ export default function ArticleCard({
           </div>
         )}
 
-        <div className="flex gap-2 pt-2">
+        <div className="flex gap-3 pt-3">
           <Button 
             variant="default" 
             onClick={onView}
             data-testid="button-view-article"
+            className="flex-1 sm:flex-none"
           >
             <ExternalLink className="w-4 h-4 mr-2" />
             View Article
@@ -67,6 +68,7 @@ export default function ArticleCard({
             variant="outline" 
             onClick={onSave}
             data-testid="button-save-article"
+            className="flex-1 sm:flex-none"
           >
             <BookmarkPlus className="w-4 h-4 mr-2" />
             Save

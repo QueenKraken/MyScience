@@ -70,18 +70,18 @@
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-mono: ui-monospace, SFMono-Regular, monospace;
   
-  /* Radius - Keeping at 0.5rem for modern clean look */
-  --radius: .5rem;
+  /* Radius - 1rem for modern softness per design guide */
+  --radius: 1rem;
   
-  /* Shadows - Keeping subtle for clean design */
-  --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 2px 4px -1px hsl(0 0% 0% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 4px 6px -1px hsl(0 0% 0% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 8px 10px -1px hsl(0 0% 0% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
+  /* Shadows - Subtle for modern clean design (soft elevation) */
+  --shadow-2xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.02);
+  --shadow-xs: 0px 1px 2px 0px hsl(0 0% 0% / 0.03);
+  --shadow-sm: 0px 1px 3px 0px hsl(0 0% 0% / 0.04), 0px 1px 2px -1px hsl(0 0% 0% / 0.03);
+  --shadow: 0px 2px 4px -1px hsl(0 0% 0% / 0.05), 0px 4px 6px -1px hsl(0 0% 0% / 0.04);
+  --shadow-md: 0px 4px 6px -2px hsl(0 0% 0% / 0.05), 0px 8px 12px -4px hsl(0 0% 0% / 0.04);
+  --shadow-lg: 0px 8px 16px -4px hsl(0 0% 0% / 0.06), 0px 12px 24px -8px hsl(0 0% 0% / 0.05);
+  --shadow-xl: 0px 16px 32px -8px hsl(0 0% 0% / 0.08), 0px 24px 48px -12px hsl(0 0% 0% / 0.06);
+  --shadow-2xl: 0px 24px 48px -12px hsl(0 0% 0% / 0.10);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 
@@ -223,6 +223,47 @@
  * need to be distinguished from eachother visually.
  */
 @layer utilities {
+
+  /* Micro-animations - Subtle and alive, not flashy */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.25s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out;
+  }
+
+  /* Subtle hover lift for cards */
+  .hover-lift {
+    transition: transform 150ms ease-out, box-shadow 150ms ease-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
 
   /* Hide ugly search cancel button in Chrome until we can style it properly */
   input[type="search"]::-webkit-search-cancel-button {
