@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import AppHeader from "@/components/AppHeader";
 import HeroSection from "@/components/HeroSection";
 import ArticleCard from "@/components/ArticleCard";
@@ -7,18 +8,91 @@ import { TopicsWidget, RecentActivityWidget } from "@/components/SidebarWidget";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { UserProfile, SavedArticle } from "@shared/schema";
+
+// Get or create user ID in localStorage
+function getUserId(): string {
+  let userId = localStorage.getItem('myscience_user_id');
+  if (!userId) {
+    userId = 'user_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('myscience_user_id', userId);
+  }
+  return userId;
+}
 
 export default function HomePage() {
-  // todo: remove mock functionality
-  const [hasConnectedOrcid, setHasConnectedOrcid] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
   
-  // Get return URL from query params (simulated for prototype)
+  // Get URL parameters for return navigation and user ID
   const urlParams = new URLSearchParams(window.location.search);
   const returnUrl = urlParams.get("return") || undefined;
   const returnSite = urlParams.get("site") || "original site";
+  const urlUserId = urlParams.get("user");
+  
+  // Use user ID from URL if available, otherwise from localStorage
+  const userId = urlUserId || getUserId();
+  
+  // Sync user ID to localStorage if it came from URL
+  useEffect(() => {
+    if (urlUserId && urlUserId !== localStorage.getItem('myscience_user_id')) {
+      localStorage.setItem('myscience_user_id', urlUserId);
+    }
+  }, [urlUserId]);
 
-  // todo: remove mock functionality
+  // Fetch user profile
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery<UserProfile>({
+    queryKey: ['/api/user', userId],
+  });
+
+  // Fetch saved articles
+  const { data: savedArticles = [], isLoading: isLoadingSaved } = useQuery<SavedArticle[]>({
+    queryKey: ['/api/user', userId, 'saved-articles'],
+  });
+
+  // Save article mutation
+  const saveArticleMutation = useMutation({
+    mutationFn: async (article: any) => {
+      const response = await fetch(`/api/saved-articles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          title: article.title,
+          authors: article.authors,
+          journal: article.journal,
+          publicationDate: article.publicationDate,
+          abstract: article.abstract,
+          tags: article.tags,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to save article');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Article saved",
+        description: "Added to your saved articles",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/user', userId, 'saved-articles'] });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to save article",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // todo: remove mock functionality - these would come from recommendation API
   const mockArticles = [
     {
       title: "CRISPR-Cas9 gene editing in human embryos: Ethical considerations and future directions",
@@ -27,6 +101,7 @@ export default function HomePage() {
       date: "Nov 2025",
       abstract: "Recent advances in CRISPR-Cas9 technology have opened new possibilities for treating genetic diseases. This study examines the ethical implications and regulatory frameworks necessary for responsible application of gene editing in human embryos, with particular attention to germline modifications and their long-term consequences.",
       tags: ["Gene Editing", "Ethics", "CRISPR"],
+      publicationDate: "2025-11",
     },
     {
       title: "Machine learning approaches to protein structure prediction: A comparative analysis",
@@ -35,6 +110,7 @@ export default function HomePage() {
       date: "Nov 2025",
       abstract: "We present a comprehensive comparison of recent machine learning approaches for protein structure prediction, including AlphaFold2 and RoseTTAFold. Our analysis demonstrates significant improvements in accuracy and computational efficiency, with implications for drug discovery and understanding protein function.",
       tags: ["Machine Learning", "Protein Structure", "Computational Biology"],
+      publicationDate: "2025-11",
     },
     {
       title: "Climate tipping points: Assessing the risk of irreversible changes in Earth systems",
@@ -43,6 +119,7 @@ export default function HomePage() {
       date: "Oct 2025",
       abstract: "This comprehensive review examines current evidence for climate tipping points and their potential cascading effects on global ecosystems. We identify critical thresholds in the Amazon rainforest, Arctic ice sheets, and ocean circulation patterns that require immediate attention from policymakers.",
       tags: ["Climate Change", "Tipping Points", "Earth Systems"],
+      publicationDate: "2025-10",
     },
   ];
 
@@ -62,19 +139,66 @@ export default function HomePage() {
     { action: "Connected ORCID", time: "Yesterday" },
   ];
 
+  const hasConnectedOrcid = !!userProfile?.orcid;
+  const showContent = hasConnectedOrcid || savedArticles.length > 0;
+
+  const handleSaveArticle = (article: typeof mockArticles[0]) => {
+    saveArticleMutation.mutate(article);
+  };
+
+  // Combine saved articles with mock recommendations (todo: replace with real recommendations API)
+  const displayArticles = showContent ? [
+    // Show saved articles first
+    ...savedArticles.map(saved => ({
+      title: saved.title,
+      authors: saved.authors,
+      journal: saved.journal,
+      date: saved.publicationDate,
+      abstract: saved.abstract,
+      tags: saved.tags || [],
+      publicationDate: saved.publicationDate,
+      isSaved: true,
+      savedId: saved.id,
+    })),
+    // Then show mock recommendations
+    ...mockArticles,
+  ] : [];
+
+  // Filter by search query
+  const filteredArticles = searchQuery
+    ? displayArticles.filter(article =>
+        article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.abstract.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.authors.some(author => author.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : displayArticles;
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader returnUrl={returnUrl} returnSiteName={returnSite} />
       
       <main>
         <HeroSection 
-          userName="Dr. Smith"
-          savedCount={42}
+          userName={userProfile?.name || undefined}
+          savedCount={savedArticles.length}
           recommendationsCount={mockArticles.length}
         />
 
         <div className="max-w-7xl mx-auto px-6 pb-12">
-          {hasConnectedOrcid ? (
+          {isLoadingProfile || isLoadingSaved ? (
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              <div className="lg:col-span-3 space-y-6">
+                <Skeleton className="h-10 w-full" />
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-64 w-full" />
+                ))}
+              </div>
+              <aside className="space-y-6">
+                <Skeleton className="h-40 w-full" />
+                <Skeleton className="h-40 w-full" />
+              </aside>
+            </div>
+          ) : showContent ? (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               <div className="lg:col-span-3 space-y-6">
                 <div className="relative">
@@ -89,16 +213,28 @@ export default function HomePage() {
                   />
                 </div>
 
-                <div className="space-y-6">
-                  {mockArticles.map((article, idx) => (
-                    <ArticleCard
-                      key={idx}
-                      {...article}
-                      onSave={() => console.log("Saved article:", article.title)}
-                      onView={() => console.log("View article:", article.title)}
-                    />
-                  ))}
-                </div>
+                {filteredArticles.length > 0 ? (
+                  <div className="space-y-6">
+                    {filteredArticles.map((article, idx) => (
+                      <ArticleCard
+                        key={'savedId' in article ? article.savedId : `mock-${idx}`}
+                        title={article.title}
+                        authors={article.authors}
+                        journal={article.journal}
+                        date={article.date}
+                        abstract={article.abstract}
+                        tags={article.tags}
+                        onSave={() => handleSaveArticle(article)}
+                        onView={() => console.log("View article:", article.title)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <EmptyState
+                    title="No articles found"
+                    description={`No articles match "${searchQuery}". Try a different search term.`}
+                  />
+                )}
               </div>
 
               <aside className="space-y-6">
@@ -111,12 +247,11 @@ export default function HomePage() {
             </div>
           ) : (
             <EmptyState
-              title="No recommendations yet"
-              description="Connect your ORCID to get personalized research recommendations tailored to your interests and reading history."
-              actionLabel="Connect ORCID"
+              title="Welcome to MyScience!"
+              description="Start by saving articles you're interested in. Your personalized feed will grow as you engage with research."
+              actionLabel="Connect ORCID (Coming Soon)"
               onAction={() => {
-                console.log("Connect ORCID clicked");
-                setHasConnectedOrcid(true);
+                console.log("Connect ORCID clicked - todo: implement ORCID OAuth");
               }}
             />
           )}

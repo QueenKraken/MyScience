@@ -31,7 +31,8 @@ export default function AppHeader({
 
   const handleReturn = () => {
     if (returnUrl) {
-      window.location.href = returnUrl;
+      // Open original article in new tab (preserving MyScience session)
+      window.open(returnUrl, '_blank');
     } else {
       console.log("Return to", returnSiteName);
     }

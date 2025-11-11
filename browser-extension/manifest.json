@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "MyScience Research Discovery",
+  "version": "1.0.0",
+  "description": "Discover personalized scientific research across eLifeSciences, Sciety, and bioRxiv",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.elifesciences.org/*",
+        "https://*.sciety.org/*",
+        "https://*.biorxiv.org/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icon48.png"],
+      "matches": [
+        "https://*.elifesciences.org/*",
+        "https://*.sciety.org/*",
+        "https://*.biorxiv.org/*"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+/* MyScience Browser Extension - Floating Button Styles */
+
+.myscience-floating-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999999;
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  
+  /* Appearance */
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
+  color: white;
+  border: none;
+  border-radius: 9999px;
+  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3),
+              0 8px 10px -6px rgba(139, 92, 246, 0.2);
+  
+  /* Typography */
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  
+  /* Interaction */
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.myscience-floating-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 35px -5px rgba(139, 92, 246, 0.4),
+              0 10px 15px -6px rgba(139, 92, 246, 0.3);
+}
+
+.myscience-floating-button:active {
+  transform: scale(0.98);
+}
+
+.myscience-floating-button:focus {
+  outline: none;
+  box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.3),
+              0 8px 10px -6px rgba(139, 92, 246, 0.2),
+              0 0 0 4px rgba(139, 92, 246, 0.3);
+}
+
+.myscience-floating-button svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.myscience-button-text {
+  white-space: nowrap;
+}
+
+/* Responsive: Hide text on smaller screens */
+@media (max-width: 640px) {
+  .myscience-floating-button {
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    justify-content: center;
+  }
+  
+  .myscience-button-text {
+    display: none;
+  }
+}
+
+/* Accessibility: High contrast mode support */
+@media (prefers-contrast: high) {
+  .myscience-floating-button {
+    border: 2px solid white;
+  }
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .myscience-floating-button {
+    transition: none;
+  }
+  
+  .myscience-floating-button:hover {
+    transform: none;
+  }
+  
+  .myscience-floating-button:active {
+    transform: none;
+  }
+}

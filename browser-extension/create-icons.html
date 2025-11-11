@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><title>Icon Generator</title></head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+function createIcon(size) {
+  const canvas = document.getElementById('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  
+  // Purple gradient background
+  const gradient = ctx.createLinearGradient(0, 0, size, size);
+  gradient.addColorStop(0, '#8b5cf6');
+  gradient.addColorStop(1, '#a855f7');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+  
+  // White "MS" text
+  ctx.fillStyle = 'white';
+  ctx.font = `bold ${size * 0.4}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('MS', size / 2, size / 2);
+  
+  // Download
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `icon${size}.png`;
+    a.click();
+  });
+}
+
+createIcon(16);
+setTimeout(() => createIcon(48), 100);
+setTimeout(() => createIcon(128), 200);
+</script>
+</body>
+</html>
