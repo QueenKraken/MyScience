@@ -42,7 +42,7 @@ export default function AppHeader({
     <header className="sticky top-0 z-50 border-b bg-background" data-testid="header-main">
       <div className="flex items-center justify-between h-16 px-6 max-w-7xl mx-auto">
         <div className="flex items-center gap-4">
-          <h1 className="font-serif text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent" data-testid="text-app-title">
+          <h1 className="font-serif text-2xl font-bold text-foreground" data-testid="text-app-title">
             MyScience
           </h1>
         </div>

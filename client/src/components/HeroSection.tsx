@@ -14,7 +14,7 @@ export default function HeroSection({
   return (
     <section className="py-12 px-6">
       <div className="max-w-4xl mx-auto text-center space-y-6">
-        <h2 className="font-serif text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent" data-testid="text-welcome">
+        <h2 className="font-serif text-4xl md:text-5xl font-bold text-foreground" data-testid="text-welcome">
           {userName ? `Welcome back, ${userName}` : "Welcome to YourScience Feed"}
         </h2>
         <p className="text-xl text-foreground/80 leading-relaxed" data-testid="text-tagline">

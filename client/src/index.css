@@ -2,51 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-/* LIGHT MODE */
+/* LIGHT MODE - MyScience Design System */
 :root {
   --button-outline: rgba(0,0,0, .10);
   --badge-outline: rgba(0,0,0, .05);
   --opaque-button-border-intensity: -8;
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
-  --background: 0 0% 100%;
-  --foreground: 0 0% 9%;
-  --border: 0 0% 91%;
-  --card: 0 0% 98%;
-  --card-foreground: 0 0% 9%;
-  --card-border: 0 0% 94%;
-  --sidebar: 0 0% 96%;
-  --sidebar-foreground: 0 0% 9%;
-  --sidebar-border: 0 0% 92%;
-  --sidebar-primary: 250 95% 62%;
+  
+  /* MyScience Color System - Modern & Clean */
+  --background: 210 20% 98%;          /* #F9FAFB - Neutral off-white */
+  --foreground: 222 47% 11%;          /* #111827 - Rich near-black */
+  --border: 220 13% 91%;              /* Subtle border */
+  --card: 0 0% 100%;                  /* Pure white for cards */
+  --card-foreground: 222 47% 11%;     /* Same as foreground */
+  --card-border: 220 13% 94%;         /* Lighter card border */
+  
+  /* Sidebar colors */
+  --sidebar: 210 20% 97%;
+  --sidebar-foreground: 222 47% 11%;
+  --sidebar-border: 220 13% 92%;
+  --sidebar-primary: 213 100% 50%;    /* Primary blue */
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 250 15% 88%;
-  --sidebar-accent-foreground: 0 0% 9%;
-  --sidebar-ring: 250 95% 62%;
-  --popover: 0 0% 95%;
-  --popover-foreground: 0 0% 9%;
-  --popover-border: 0 0% 90%;
-  --primary: 250 95% 62%;
+  --sidebar-accent: 213 20% 90%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-ring: 213 100% 50%;
+  
+  /* Popover */
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --popover-border: 220 13% 91%;
+  
+  /* Primary - Electric Science Blue #0078FF */
+  --primary: 213 100% 50%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 93%;
-  --secondary-foreground: 0 0% 9%;
-  --muted: 240 6% 92%;
-  --muted-foreground: 240 4% 40%;
-  --accent: 280 85% 96%;
-  --accent-foreground: 280 65% 25%;
-  --destructive: 0 84% 42%;
-  --destructive-foreground: 0 0% 98%;
-  --input: 0 0% 75%;
-  --ring: 250 95% 62%;
-  --chart-1: 250 85% 55%;
-  --chart-2: 280 80% 60%;
-  --chart-3: 200 75% 50%;
-  --chart-4: 160 70% 45%;
-  --chart-5: 320 65% 58%;
+  
+  /* Secondary - Coral Pink #FF4F81 (for engagement, likes, badges) */
+  --secondary: 345 100% 65%;
+  --secondary-foreground: 0 0% 100%;
+  
+  /* Muted states */
+  --muted: 210 16% 93%;
+  --muted-foreground: 215 14% 45%;
+  
+  /* Accent - Bright Green #00E0A1 (for progress, success) */
+  --accent: 162 100% 44%;
+  --accent-foreground: 0 0% 100%;
+  
+  /* Destructive - Error Red #E11D48 */
+  --destructive: 346 77% 50%;
+  --destructive-foreground: 0 0% 100%;
+  
+  /* Input */
+  --input: 220 13% 80%;
+  --ring: 213 100% 50%;
+  
+  /* Chart colors - using design system palette */
+  --chart-1: 213 100% 50%;    /* Primary blue */
+  --chart-2: 345 100% 65%;    /* Secondary pink */
+  --chart-3: 162 100% 44%;    /* Accent green */
+  --chart-4: 213 80% 60%;     /* Lighter blue */
+  --chart-5: 345 80% 70%;     /* Lighter pink */
+  
+  /* Typography - Per design guide */
   --font-sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-mono: ui-monospace, SFMono-Regular, monospace;
+  
+  /* Radius - Keeping at 0.5rem for modern clean look */
   --radius: .5rem;
+  
+  /* Shadows - Keeping subtle for clean design */
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.00);
   --shadow-sm: 0px 2px 0px 0px hsl(0 0% 0% / 0.00), 0px 1px 2px -1px hsl(0 0% 0% / 0.00);
