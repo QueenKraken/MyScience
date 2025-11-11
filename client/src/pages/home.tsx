@@ -140,7 +140,8 @@ export default function HomePage() {
   ];
 
   const hasConnectedOrcid = !!userProfile?.orcid;
-  const showContent = hasConnectedOrcid || savedArticles.length > 0;
+  // Show content if user has ORCID, saved articles, OR if we have recommendations to show
+  const showContent = hasConnectedOrcid || savedArticles.length > 0 || mockArticles.length > 0;
 
   const handleSaveArticle = (article: typeof mockArticles[0]) => {
     saveArticleMutation.mutate(article);

@@ -4,7 +4,9 @@
 MyScience is a personalized research discovery platform for early career researchers. It provides a "Netflix for Science" experience, helping researchers discover, save, and connect with scientific research tailored to their interests.
 
 ## Current State (MVP - November 2025)
-The project is in early prototype phase with the following components:
+✅ **MVP Complete** - Fully functional prototype with end-to-end testing verified
+
+The project delivers a working prototype with the following components:
 
 ### Browser Extension
 - **Location**: `browser-extension/`
@@ -129,11 +131,21 @@ See `browser-extension/README.md` for installation instructions.
 
 ## Development Notes
 
-### Mock Data
-Currently using mock article data for UI prototyping. Look for `// todo: remove mock functionality` comments to identify placeholder code.
+### Mock Data vs Real Data
+- **Saved Articles**: Fully functional with real API integration (persists in-memory during server session)
+- **Recommendations**: Currently using mock article data for UI prototyping (3 hardcoded articles)
+- **Search**: Works across both saved and mock articles
+- **User Profiles**: Real API integration with localStorage-based identification
+
+Look for `// todo: remove mock functionality` comments to identify placeholder code for future enhancement.
 
 ### localStorage Usage
 User IDs are stored in localStorage as `myscience_user_id`. This provides basic persistence without requiring authentication in the prototype phase.
+
+### Data Persistence
+- **Within Server Session**: All saved articles and user profiles persist correctly across page reloads
+- **Across Server Restarts**: Data is lost (in-memory storage limitation)
+- **End-to-End Testing**: Verified complete flow from extension → save article → reload → persistence
 
 ### Browser Extension Development
 - Extension uses Manifest V3 for Chrome/Edge/Firefox compatibility
