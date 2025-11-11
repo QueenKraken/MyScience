@@ -65,7 +65,8 @@
   --chart-5: 345 80% 70%;     /* Lighter pink */
   
   /* Typography - Per design guide */
-  --font-sans: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Poppins', sans-serif;      /* Geometric, confident, approachable - weights 600-700 */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;  /* Digital clarity - weights 400-500 */
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-mono: ui-monospace, SFMono-Regular, monospace;
   

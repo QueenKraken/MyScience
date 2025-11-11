@@ -19,7 +19,7 @@ export default function EmptyState({
       <div className="rounded-full bg-muted p-6 mb-6">
         <FileQuestion className="w-12 h-12 text-muted-foreground" />
       </div>
-      <h3 className="text-2xl font-semibold mb-2" data-testid="text-empty-title">
+      <h3 className="font-heading text-2xl font-semibold mb-2" data-testid="text-empty-title">
         {title}
       </h3>
       <p className="text-muted-foreground max-w-md mb-6 leading-relaxed" data-testid="text-empty-description">
