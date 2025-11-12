@@ -235,6 +235,16 @@ Look for `// todo: remove mock functionality` comments to identify placeholder c
 - Zod validation on all user inputs
 - CSRF protection via session management
 
+### Navigation & Branding
+- MyScience logo displayed on all pages (landing, home, profile)
+- Logo is clickable and navigates to home page
+- Navigation bar includes:
+  - Home icon button (returns to homepage)
+  - Profile icon button (navigates to profile page)
+  - Theme toggle (dark/light mode)
+- Consistent header across all authenticated pages
+- Logo image: Blue sparkle icon with "MyScience" text
+
 ### Browser Extension Configuration
 - Extension uses Manifest V3 for Chrome/Edge/Firefox compatibility
 - Currently configured to use Replit development URL: `https://workspace.ashaw7.replit.dev`

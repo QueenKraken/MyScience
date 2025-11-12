@@ -1,8 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, BookOpen, Users, Zap } from "lucide-react";
+import { Sparkles, BookOpen, Users, Zap, Moon, Sun } from "lucide-react";
+import { useState, useEffect } from "react";
+import logoImage from "@assets/image_1762907544970.png";
 
 export default function Landing() {
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains("dark");
+    setDarkMode(isDark);
+  }, []);
+
+  const toggleDarkMode = () => {
+    const newMode = !darkMode;
+    setDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("theme", newMode ? "dark" : "light");
+  };
+
   const handleLogin = () => {
     window.location.href = "/api/login";
   };
@@ -12,16 +32,33 @@ export default function Landing() {
       {/* Header */}
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <img 
+            src={logoImage} 
+            alt="MyScience" 
+            className="h-10 w-auto"
+            data-testid="img-logo"
+          />
           <div className="flex items-center gap-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <h1 className="text-xl font-heading font-bold">MyScience</h1>
+            <Button 
+              onClick={handleLogin}
+              data-testid="button-login"
+            >
+              Sign In
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleDarkMode}
+              data-testid="button-theme-toggle"
+              aria-label="Toggle theme"
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5" />
+              ) : (
+                <Moon className="w-5 h-5" />
+              )}
+            </Button>
           </div>
-          <Button 
-            onClick={handleLogin}
-            data-testid="button-login"
-          >
-            Sign In
-          </Button>
         </div>
       </header>
 

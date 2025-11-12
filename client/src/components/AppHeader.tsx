@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Moon, Sun, User } from "lucide-react";
+import { ArrowLeft, Moon, Sun, User, Home } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
+import logoImage from "@assets/image_1762907544970.png";
 
 interface AppHeaderProps {
   returnUrl?: string;
@@ -42,11 +43,16 @@ export default function AppHeader({
   return (
     <header className="sticky top-0 z-50 border-b bg-background" data-testid="header-main">
       <div className="flex items-center justify-between h-16 px-6 max-w-7xl mx-auto">
-        <div className="flex items-center gap-4">
-          <h1 className="font-heading text-2xl font-semibold text-foreground" data-testid="text-app-title">
-            MyScience
-          </h1>
-        </div>
+        <Link href="/">
+          <div className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-lg px-2 py-1 -ml-2 cursor-pointer" data-testid="link-logo">
+            <img 
+              src={logoImage} 
+              alt="MyScience" 
+              className="h-10 w-auto"
+              data-testid="img-logo"
+            />
+          </div>
+        </Link>
 
         <div className="flex items-center gap-2">
           {returnUrl && (
@@ -59,6 +65,16 @@ export default function AppHeader({
               Return to {returnSiteName}
             </Button>
           )}
+          <Link href="/">
+            <Button
+              variant="ghost"
+              size="icon"
+              data-testid="button-home"
+              aria-label="Home"
+            >
+              <Home className="w-5 h-5" />
+            </Button>
+          </Link>
           <Link href="/profile">
             <Button
               variant="ghost"
