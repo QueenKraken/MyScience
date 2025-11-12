@@ -66,6 +66,9 @@ export default function ArticleCard({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/social/article-likes/check/${articleId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/social/article-likes/count/${articleId}`] });
+      // Invalidate gamification progress to show updated XP
+      queryClient.invalidateQueries({ queryKey: ["/api/gamification/progress"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/gamification/user-badges"] });
     },
     onError: (error: any) => {
       if (error.message.includes('Already liked')) {

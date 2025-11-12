@@ -8,6 +8,7 @@ import type { BadgeTier } from "@shared/gamification";
 import type { Badge, UserBadge, GamificationProgress } from "@shared/schema";
 import { Trophy, Award, Zap, Star } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import AppHeader from "@/components/AppHeader";
 
 const tierIcons: Record<BadgeTier, typeof Trophy> = {
   Common: Zap,
@@ -65,22 +66,28 @@ export default function Gamification() {
 
   if (progressLoading || badgesLoading || userBadgesLoading) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Skeleton className="h-64 col-span-2" />
-          <Skeleton className="h-64" />
+      <>
+        <AppHeader />
+        <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+          <Skeleton className="h-10 w-64" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Skeleton className="h-64 col-span-2" />
+            <Skeleton className="h-64" />
+          </div>
+          <Skeleton className="h-96" />
         </div>
-        <Skeleton className="h-96" />
-      </div>
+      </>
     );
   }
 
   if (!progress || !badges || !userBadges) {
     return (
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <p className="text-muted-foreground">Unable to load gamification data.</p>
-      </div>
+      <>
+        <AppHeader />
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <p className="text-muted-foreground">Unable to load gamification data.</p>
+        </div>
+      </>
     );
   }
 
@@ -93,15 +100,17 @@ export default function Gamification() {
   const earnedBadgeIds = new Set(userBadges.map((ub) => ub.badgeId));
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold mb-2" data-testid="heading-gamification">
-          Your Progress
-        </h1>
-        <p className="text-muted-foreground" data-testid="text-gamification-description">
-          Track your journey through the research community
-        </p>
-      </div>
+    <>
+      <AppHeader />
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        <div>
+          <h1 className="text-4xl font-bold mb-2" data-testid="heading-gamification">
+            Your Progress
+          </h1>
+          <p className="text-muted-foreground" data-testid="text-gamification-description">
+            Track your journey through the research community
+          </p>
+        </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="col-span-2" data-testid="card-level-progress">
@@ -301,6 +310,7 @@ export default function Gamification() {
           </div>
         </CardContent>
       </Card>
-    </div>
+      </div>
+    </>
   );
 }
