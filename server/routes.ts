@@ -20,7 +20,7 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, inArray } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (Replit Auth integration)
@@ -707,7 +707,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           })
           .from(savedArticles)
           .innerJoin(users, eq(users.id, savedArticles.userId))
-          .where(sql`${savedArticles.userId} = ANY(${followedUserIds})`)
+          .where(inArray(savedArticles.userId, followedUserIds))
           .orderBy(desc(savedArticles.savedAt))
           .limit(10),
           db.select({
@@ -718,7 +718,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .from(articleLikes)
           .innerJoin(users, eq(users.id, articleLikes.userId))
           .leftJoin(savedArticles, eq(savedArticles.id, articleLikes.articleId))
-          .where(sql`${articleLikes.userId} = ANY(${followedUserIds})`)
+          .where(inArray(articleLikes.userId, followedUserIds))
           .orderBy(desc(articleLikes.createdAt))
           .limit(10),
         ]);
