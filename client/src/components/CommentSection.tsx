@@ -37,7 +37,7 @@ export function CommentSection({ articleId }: CommentSectionProps) {
 
   const commentsKey = [`/api/comments/${articleId}`] as const;
 
-  const { data: comments, isLoading } = useQuery<Comment[]>({
+  const { data: comments, isLoading, isError, error } = useQuery<Comment[]>({
     queryKey: commentsKey,
   });
 
@@ -109,6 +109,13 @@ export function CommentSection({ articleId }: CommentSectionProps) {
                 <Skeleton className="h-20 w-full" />
               </div>
             ))}
+          </div>
+        ) : isError ? (
+          <div className="text-center py-12" data-testid="error-comments-fetch">
+            <p className="text-destructive font-medium mb-2">Failed to load comments</p>
+            <p className="text-muted-foreground text-sm">
+              {error instanceof Error ? error.message : "An error occurred while fetching comments"}
+            </p>
           </div>
         ) : rootComments.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">

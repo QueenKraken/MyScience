@@ -39,7 +39,7 @@ export default function ArticleDetailPage() {
   
   const articleDetailKey = [`/api/saved-articles/${articleId}`] as const;
   
-  const { data: article, isLoading } = useQuery<SavedArticle>({
+  const { data: article, isLoading, isError, error } = useQuery<SavedArticle>({
     queryKey: articleDetailKey,
   });
 
@@ -63,6 +63,13 @@ export default function ArticleDetailPage() {
             <Skeleton className="h-6 w-1/2" />
             <Skeleton className="h-32 w-full" />
           </div>
+        ) : isError ? (
+          <Card className="p-8 text-center" data-testid="error-article-fetch">
+            <p className="text-destructive font-medium mb-2">Failed to load article</p>
+            <p className="text-muted-foreground text-sm">
+              {error instanceof Error ? error.message : "An error occurred while fetching the article"}
+            </p>
+          </Card>
         ) : article ? (
           <div className="space-y-8">
             <Card className="p-8">
