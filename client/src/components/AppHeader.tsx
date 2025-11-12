@@ -85,7 +85,7 @@ export default function AppHeader({
           </div>
         </Link>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {returnUrl && (
             <Button 
               variant="outline" 
@@ -99,51 +99,59 @@ export default function AppHeader({
           
           {isAuthenticated ? (
             <>
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  data-testid="button-home"
-                  aria-label="Home"
-                >
-                  <Home className="w-5 h-5" />
-                </Button>
-              </Link>
-              <Link href="/people">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  data-testid="button-people"
-                  aria-label="People"
-                >
-                  <Users className="w-5 h-5" />
-                </Button>
-              </Link>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-1">
+                <Link href="/">
                   <Button
                     variant="ghost"
                     size="icon"
-                    data-testid="button-user-menu"
-                    aria-label="User menu"
+                    data-testid="button-home"
+                    aria-label="Home"
                   >
-                    <User className="w-5 h-5" />
+                    <Home className="w-5 h-5" />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" data-testid="dropdown-user-menu">
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" data-testid="link-profile-menu">
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <NotificationDropdown />
+                </Link>
+                <Link href="/people">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid="button-people"
+                    aria-label="People"
+                  >
+                    <Users className="w-5 h-5" />
+                  </Button>
+                </Link>
+              </div>
+              
+              <div className="h-6 w-px bg-border" />
+              
+              <div className="flex items-center gap-1">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      data-testid="button-user-menu"
+                      aria-label="User menu"
+                    >
+                      <User className="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" data-testid="dropdown-user-menu">
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" data-testid="link-profile-menu">
+                        <User className="w-4 h-4 mr-2" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <NotificationDropdown />
+              </div>
+              
               <LevelBadge />
             </>
           ) : (
