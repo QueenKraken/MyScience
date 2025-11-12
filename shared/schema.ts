@@ -5,6 +5,7 @@ import {
   varchar, 
   timestamp, 
   jsonb,
+  integer,
   index,
   unique 
 } from "drizzle-orm/pg-core";
@@ -33,7 +34,10 @@ export const users = pgTable("users", {
   orcid: text("orcid"),
   scietyId: text("sciety_id"),
   bio: text("bio"),
-  subjectAreas: jsonb("subject_areas").$type<string[]>(),
+  subjectAreas: text("subject_areas").array(),
+  // Gamification fields
+  level: integer("level").notNull().default(0),
+  totalXp: integer("total_xp").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -177,6 +181,34 @@ export const notifications = pgTable(
   ]
 );
 
+// Gamification: Badge definitions
+export const badges = pgTable("badges", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(), // e.g., "First Steps", "Connector"
+  trigger: text("trigger").notNull(), // e.g., "create_account", "follow_5_users"
+  points: integer("points").notNull(), // XP awarded for earning this badge
+  message: text("message").notNull(), // Social share message
+  tier: text("tier").notNull(), // "Common", "Rare", "Epic", "Legendary"
+  iconUrl: text("icon_url"), // Optional badge icon URL
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Gamification: User earned badges
+export const userBadges = pgTable(
+  "user_badges",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    badgeId: varchar("badge_id").notNull().references(() => badges.id, { onDelete: "cascade" }),
+    earnedAt: timestamp("earned_at").defaultNow(),
+  },
+  (table) => [
+    index("IDX_user_badges_user").on(table.userId),
+    index("IDX_user_badges_badge").on(table.badgeId),
+    unique("UQ_user_badge_pair").on(table.userId, table.badgeId), // Prevent earning same badge twice
+  ]
+);
+
 // Bonfire account connections
 // NOTE: Tokens should be encrypted at rest using a KMS or similar before storage
 export const bonfireAccounts = pgTable(
@@ -258,6 +290,17 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
   createdAt: true,
 });
 
+// Gamification schemas
+export const insertBadgeSchema = createInsertSchema(badges).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
+  id: true,
+  earnedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -281,3 +324,9 @@ export type InsertUserReport = z.infer<typeof insertUserReportSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type BonfireAccount = typeof bonfireAccounts.$inferSelect;
+
+// Gamification types
+export type Badge = typeof badges.$inferSelect;
+export type InsertBadge = z.infer<typeof insertBadgeSchema>;
+export type UserBadge = typeof userBadges.$inferSelect;
+export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
