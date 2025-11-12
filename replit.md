@@ -22,9 +22,10 @@ The project comprises a **Browser Extension** (Manifest V3) for injecting MyScie
     *   **Typography**: Poppins for headings, Inter for body text, Source Serif 4 for article titles.
     *   **Design Principles**: Human-first design (e.g., ResearcherProfileCard, interest badges), progressive disclosure (expandable abstracts, hover tooltips), and friction reduction (inline actions, seamless auth).
     *   **Core Features**: Personalized "For You" research feed, topic filter pills with multi-select (logical OR) and dynamic filtering, search functionality, saved articles management, and social interactions (follow users/authors, like articles).
-    *   **Notifications**: Real-time notification system with unread counts and read/unread management.
-    *   **Profile Management**: Comprehensive user profiles with ORCID, Sciety ID, bio, and subject areas.
-    *   **Security**: Server-side user ID injection, authentication middleware for protected routes, httpOnly session cookies, Zod validation, and CSRF protection.
+    *   **Notifications**: Real-time notification system with unread counts, read/unread management, and clickable notifications that navigate to user profiles. Dropdown shows loading state while fetching.
+    *   **Profile Management**: Comprehensive user profiles with ORCID, Sciety ID, bio, and subject areas. User profiles accessible at /profiles/:userId with tabs (Overview, Followers, Following), follow/unfollow functionality, and follower/following stats.
+    *   **People Discovery**: /people page for discovering researchers with search (name, email, bio) and subject area filtering. Multi-select filter badges with logical OR for subject areas. User cards show profile image, name, email, bio preview, and subject badges.
+    *   **Security**: Server-side user ID injection, authentication middleware for protected routes, httpOnly session cookies, Zod validation, parameterized SQL queries preventing injection attacks, and CSRF protection.
 
 ## External Dependencies
 *   **Authentication Providers**: Google, GitHub (via Replit Auth OIDC)
