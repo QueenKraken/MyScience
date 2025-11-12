@@ -1086,6 +1086,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/forum-posts/comments/:commentId", isAuthenticated, async (req: any, res) => {
+    try {
+      const { commentId } = req.params;
+      
+      // Validate content
+      const { content } = z.object({ content: z.string().min(1) }).parse(req.body);
+      
+      const comment = await storage.updateForumPostComment(commentId, content);
+      if (!comment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+      
+      res.json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid content", details: error.errors });
+      }
+      console.error("Error updating forum post comment:", error);
+      res.status(500).json({ error: "Failed to update forum post comment" });
+    }
+  });
+
+  app.delete("/api/forum-posts/comments/:commentId", isAuthenticated, async (req: any, res) => {
+    try {
+      const { commentId } = req.params;
+      
+      const deleted = await storage.deleteForumPostComment(commentId);
+      if (!deleted) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting forum post comment:", error);
+      res.status(500).json({ error: "Failed to delete forum post comment" });
+    }
+  });
+
   // Discussion space routes (protected)
   app.post("/api/discussion-spaces", isAuthenticated, async (req: any, res) => {
     try {
