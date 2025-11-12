@@ -191,15 +191,18 @@ export default function NotificationDropdown() {
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="divide-y" role="list">
               {notifications.map((notification) => (
-                <div
+                <button
                   key={notification.id}
-                  className={`px-4 py-3 hover-elevate cursor-pointer transition-colors ${
+                  className={`w-full px-4 py-3 hover-elevate transition-colors text-left ${
                     !notification.read ? 'bg-accent/10' : ''
                   }`}
                   onClick={() => !notification.read && markAsReadMutation.mutate(notification.id)}
-                  data-testid={`notification-${notification.id}`}
+                  disabled={!!notification.read || markAsReadMutation.isPending}
+                  data-testid={`notification-item-${notification.id}`}
+                  role="listitem"
+                  aria-label={`${getNotificationText(notification)} ${notification.createdAt ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true }) : ''}`}
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex-1 min-w-0">
@@ -217,7 +220,7 @@ export default function NotificationDropdown() {
                       <div className="w-2 h-2 rounded-full bg-primary mt-1.5" data-testid="indicator-unread" />
                     )}
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           )}
