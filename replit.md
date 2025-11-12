@@ -52,6 +52,34 @@ The project comprises a **Browser Extension** (Manifest V3) for injecting MyScie
     *   **Navigation**: Flame icon in AppHeader for quick access
     *   **API Endpoint**: GET `/api/forum-posts` returns enriched posts via `getForumPostsWithMeta` storage method
     *   **Performance Note**: Current implementation uses N+1 queries acceptable for MVP traffic (<100 posts). Future optimization with JOIN-based aggregation or counter-caching recommended when load exceeds 5k daily reads or latency >300ms
+*   **Discussion Spaces System**:
+    *   **Overview**: Private/public discussion rooms for researchers to collaborate on articles, topics, and research areas
+    *   **Space List**: `/spaces` page with grid view, create dialog, empty state, and navigation in AppHeader (Messages icon)
+    *   **Space Detail**: `/spaces/:spaceId` with split-view layout (messages timeline + member sidebar), responsive design with mobile drawer
+    *   **Real-time Chat**: Message timeline with 10s polling via `refetchInterval`, manual refresh button, message grouping (consecutive messages from same user)
+    *   **Message Composer**: Keyboard shortcuts (Enter to send, Shift+Enter for new line), loading states, automatic scroll to bottom
+    *   **Member Management**: 
+        *   SpaceMemberList with enriched user data (avatars, names, roles)
+        *   AddMemberDialog for creators (user search, role selection: member/moderator)
+        *   Remove member functionality (creator can remove others, users can self-remove)
+        *   Creator automatically added as "creator" role on space creation
+    *   **Privacy Control**: Public/private spaces with subject area tagging
+    *   **User Enrichment**: Messages and members enriched with user data (firstName, lastName, email, profileImageUrl) via N+1 pattern (acceptable for MVP)
+    *   **Access Control**: 
+        *   Membership verification on all endpoints
+        *   Creator special-casing for permissions (always has access even if not in members table)
+        *   Role-based actions (creator-only: add/remove members)
+    *   **Accessibility**: aria-live="polite" on message list, proper focus management, screen reader labels
+    *   **API Endpoints**: 
+        *   GET `/api/discussion-spaces` - user's spaces
+        *   POST `/api/discussion-spaces` - create space
+        *   GET `/api/discussion-spaces/:spaceId` - space details
+        *   GET `/api/discussion-spaces/:spaceId/messages` - enriched messages
+        *   POST `/api/discussion-spaces/:spaceId/messages` - send message
+        *   GET `/api/discussion-spaces/:spaceId/members` - enriched members
+        *   POST `/api/discussion-spaces/:spaceId/members` - add member
+        *   DELETE `/api/discussion-spaces/:spaceId/members/:userId` - remove member
+    *   **Performance Note**: Message/member enrichment uses N+1 queries (Promise.all) acceptable for MVP. Real-time strategy uses 10s polling, designed to swap to WebSocket/SSE later by updating fetcher only
 
 ## External Dependencies
 *   **Authentication Providers**: Google, GitHub (via Replit Auth OIDC)
