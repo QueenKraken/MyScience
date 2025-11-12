@@ -57,11 +57,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/saved-articles", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const articleData = insertSavedArticleSchema.parse({
-        ...req.body,
-        userId,
-      });
-      const article = await storage.saveArticle(articleData);
+      // Parse the article data (without userId - client shouldn't send it)
+      const articleData = insertSavedArticleSchema.parse(req.body);
+      // Inject userId server-side for security
+      const article = await storage.saveArticle({ ...articleData, userId });
       res.status(201).json(article);
     } catch (error) {
       if (error instanceof z.ZodError) {

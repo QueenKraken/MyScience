@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Moon, Sun } from "lucide-react";
+import { ArrowLeft, Moon, Sun, User } from "lucide-react";
 import { useState, useEffect } from "react";
+import { Link } from "wouter";
 
 interface AppHeaderProps {
   returnUrl?: string;
@@ -58,6 +59,16 @@ export default function AppHeader({
               Return to {returnSiteName}
             </Button>
           )}
+          <Link href="/profile">
+            <Button
+              variant="ghost"
+              size="icon"
+              data-testid="button-profile"
+              aria-label="Profile"
+            >
+              <User className="w-5 h-5" />
+            </Button>
+          </Link>
           <Button
             variant="ghost"
             size="icon"
