@@ -150,6 +150,7 @@ export default function AppHeader({
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <NotificationDropdown />
+                <div className="w-2" />
               </div>
               
               <LevelBadge />
