@@ -172,6 +172,13 @@ See `browser-extension/README.md` for installation instructions.
 - Search functionality
 - Saved articles display
 - Researcher profile card
+- **Saved Articles Filter**:
+  - Click "Articles saved" count in hero to view only saved articles
+  - Click "Saved" count in profile card to view only saved articles
+  - Visual banner indicates when viewing saved articles only
+  - "Show all articles" button clears the filter
+  - Heading changes to "Your Saved Articles" when filtered
+  - Buttons disabled when no saved articles exist
 - **Status**: ✅ Complete
 
 ### Profile Page (`/profile`) - Authenticated
