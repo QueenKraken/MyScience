@@ -292,6 +292,7 @@ export default function HomePage() {
                     {filteredArticles.map((article) => (
                       <ArticleCard
                         key={article.id}
+                        articleId={article.id}
                         title={article.title}
                         authors={article.authors}
                         journal={article.journal}

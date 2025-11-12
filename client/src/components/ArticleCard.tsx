@@ -2,11 +2,15 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { BookmarkPlus, ExternalLink, Share2, FileText, Bookmark, ChevronDown, ChevronUp } from "lucide-react";
+import { BookmarkPlus, ExternalLink, Share2, FileText, Bookmark, ChevronDown, ChevronUp, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
 
 interface ArticleCardProps {
+  articleId: string;
   title: string;
   authors: string[];
   journal: string;
@@ -20,6 +24,7 @@ interface ArticleCardProps {
 }
 
 export default function ArticleCard({
+  articleId,
   title,
   authors,
   journal,
@@ -32,10 +37,72 @@ export default function ArticleCard({
   onView,
 }: ArticleCardProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   
   // Check if abstract is long enough to need expansion
   const needsExpansion = abstract.length > 200;
+
+  // Fetch like status and count
+  const { data: likeStatus } = useQuery<{ hasLiked: boolean }>({
+    queryKey: [`/api/social/article-likes/check/${articleId}`],
+    enabled: !!user,
+  });
+
+  const { data: likeCount } = useQuery<{ count: number }>({
+    queryKey: [`/api/social/article-likes/count/${articleId}`],
+    enabled: !!user,
+  });
+
+  const hasLiked = likeStatus?.hasLiked ?? false;
+  const likes = likeCount?.count ?? 0;
+
+  // Like mutation
+  const likeMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/social/article-likes', { articleId });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/social/article-likes/check/${articleId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/social/article-likes/count/${articleId}`] });
+    },
+    onError: (error: any) => {
+      if (error.message.includes('Already liked')) {
+        return;
+      }
+      toast({
+        title: "Failed to like article",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Unlike mutation
+  const unlikeMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('DELETE', `/api/social/article-likes/${articleId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/social/article-likes/check/${articleId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/social/article-likes/count/${articleId}`] });
+    },
+    onError: () => {
+      toast({
+        title: "Failed to unlike article",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLike = () => {
+    if (hasLiked) {
+      unlikeMutation.mutate();
+    } else {
+      likeMutation.mutate();
+    }
+  };
 
   const handleShare = () => {
     if (navigator.share && externalUrl) {
@@ -126,6 +193,25 @@ export default function ArticleCard({
 
         {/* Inline Actions - Spotify style with Notion tooltips */}
         <div className="flex items-center gap-2 pt-3 border-t border-border/50">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={handleLike}
+                disabled={likeMutation.isPending || unlikeMutation.isPending}
+                data-testid="button-like-article"
+                className="gap-2"
+              >
+                <Heart className={`w-4 h-4 ${hasLiked ? 'fill-current text-accent-1' : ''}`} />
+                {likes > 0 && <span className="text-sm">{likes}</span>}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{hasLiked ? "Unlike" : "Like this article"}</p>
+            </TooltipContent>
+          </Tooltip>
+
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
