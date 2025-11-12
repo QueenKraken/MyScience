@@ -45,6 +45,7 @@ function Router() {
       {!isAuthenticated ? (
         <>
           <Route path="/" component={Landing} />
+          <Route path="/home" component={Landing} />
           <Route path="/profile" component={Landing} />
           <Route path="/profiles/:userId" component={Landing} />
           <Route path="/people" component={Landing} />
@@ -52,6 +53,7 @@ function Router() {
       ) : (
         <>
           <Route path="/" component={HomePage} />
+          <Route path="/home" component={HomePage} />
           <Route path="/profile" component={ProfilePage} />
           <Route path="/profiles/:userId" component={UserProfilePage} />
           <Route path="/people" component={PeoplePage} />
