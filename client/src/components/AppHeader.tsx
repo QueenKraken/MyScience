@@ -48,7 +48,7 @@ export default function AppHeader({
             <img 
               src={logoImage} 
               alt="MyScience" 
-              className="h-10 w-auto"
+              className="h-10 w-auto dark:brightness-0 dark:invert"
               data-testid="img-logo"
             />
           </div>

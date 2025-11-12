@@ -251,7 +251,7 @@ export default function HomePage() {
                     {mockTopics.map((topic) => (
                       <Badge
                         key={topic.name}
-                        variant={selectedTopics.includes(topic.name) ? "default" : "outline"}
+                        variant={selectedTopics.includes(topic.name) ? "default" : "secondary"}
                         className="cursor-pointer hover-elevate active-elevate-2 transition-all"
                         onClick={() => toggleTopic(topic.name)}
                         data-testid={`filter-topic-${topic.name.toLowerCase().replace(/\s+/g, '-')}`}
@@ -297,8 +297,8 @@ export default function HomePage() {
               <aside className="space-y-6">
                 <ResearcherProfileCard
                   userName={user?.firstName ?? null}
-                  userEmail={user?.email}
-                  avatarUrl={user?.profileImageUrl ? user.profileImageUrl : undefined}
+                  userEmail={user?.email || undefined}
+                  avatarUrl={user?.profileImageUrl || undefined}
                   savedCount={savedArticles.length}
                   readThisWeek={savedArticles.length}
                   topTopics={mockTopics.slice(0, 3).map(t => t.name)}
