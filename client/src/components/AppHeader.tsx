@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import logoImage from "@assets/image_1762907544970.png";
 import NotificationDropdown from "@/components/NotificationDropdown";
+import { LevelBadge } from "@/components/LevelBadge";
 
 interface AppHeaderProps {
   returnUrl?: string;
@@ -97,6 +98,7 @@ export default function AppHeader({
             </Button>
           </Link>
           <NotificationDropdown />
+          <LevelBadge />
           <Button
             variant="ghost"
             size="icon"

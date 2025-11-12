@@ -330,3 +330,9 @@ export type Badge = typeof badges.$inferSelect;
 export type InsertBadge = z.infer<typeof insertBadgeSchema>;
 export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+
+// Gamification API response types
+export interface GamificationProgress {
+  currentLevel: number;
+  totalXp: number;
+}

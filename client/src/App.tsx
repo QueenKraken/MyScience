@@ -9,6 +9,7 @@ import Landing from "@/pages/landing";
 import ProfilePage from "@/pages/profile";
 import UserProfilePage from "@/pages/user-profile";
 import PeoplePage from "@/pages/people";
+import Gamification from "@/pages/Gamification";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -38,6 +39,7 @@ function Router() {
           <Route path="/profile" component={ProfilePage} />
           <Route path="/profiles/:userId" component={UserProfilePage} />
           <Route path="/people" component={PeoplePage} />
+          <Route path="/gamification" component={Gamification} />
         </>
       )}
       <Route component={NotFound} />
