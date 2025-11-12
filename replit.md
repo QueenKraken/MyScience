@@ -4,9 +4,9 @@
 MyScience is a personalized research discovery platform for early career researchers. It provides a "Netflix for Science" experience, helping researchers discover, save, and connect with scientific research tailored to their interests.
 
 ## Current State (MVP - November 2025)
-✅ **MVP Complete** - Fully functional prototype with end-to-end testing verified
+✅ **MVP + Authentication & Profiles Complete** - Fully functional with secure authentication and user profiles
 
-The project delivers a working prototype with the following components:
+The project delivers a working application with the following components:
 
 ### Browser Extension
 - **Location**: `browser-extension/`
@@ -20,17 +20,23 @@ The project delivers a working prototype with the following components:
 
 ### Web Application
 - **Stack**: React + TypeScript + Vite + Express
+- **Authentication**: Replit Auth (Google, GitHub, email/password via OIDC)
+- **Database**: PostgreSQL (Neon-backed) with Drizzle ORM
 - **Styling**: Tailwind CSS + Shadcn UI components
 - **State Management**: TanStack Query (React Query v5)
-- **Routing**: Wouter
+- **Routing**: Wouter with authentication guards
 
 ### Backend API
 - **Framework**: Express.js
-- **Storage**: In-memory (MemStorage) for prototype
-- **Endpoints**:
-  - `GET /api/user/:userId` - Get or create user profile
-  - `PUT /api/user/:userId` - Update user profile
-  - `GET /api/user/:userId/saved-articles` - Get user's saved articles
+- **Storage**: PostgreSQL with Drizzle ORM
+- **Session Management**: Express sessions stored in PostgreSQL
+- **Authentication Endpoints**:
+  - `GET /api/auth/user` - Get current authenticated user
+  - `GET /api/login` - Initiate OIDC login flow
+  - `GET /api/logout` - End session
+- **Protected Endpoints** (require authentication):
+  - `PUT /api/profile` - Update user profile
+  - `GET /api/saved-articles` - Get user's saved articles
   - `POST /api/saved-articles` - Save an article
   - `DELETE /api/saved-articles/:articleId` - Remove saved article
 
@@ -39,15 +45,18 @@ The project delivers a working prototype with the following components:
 ### User Profile
 ```typescript
 {
-  id: string;              // User identifier from localStorage
-  name: string | null;
-  orcid: string | null;    // For future ORCID integration
-  scietyId: string | null; // For future Sciety integration
-  preferences: {
-    topics?: string[];
-    emailNotifications?: boolean;
-  } | null;
+  id: string;                    // UUID from authentication provider
+  email: string;                 // From authentication provider
+  firstName: string | null;      // User's first name
+  lastName: string | null;       // User's last name
+  profileImageUrl: string | null; // Avatar URL
+  orcid: string | null;          // ORCID identifier (e.g., 0000-0002-1825-0097)
+  scietyId: string | null;       // Sciety username
+  bio: string | null;            // Research background
+  subjectAreas: string[] | null; // Research interests
+  hashedPassword: string | null; // For email/password auth
   createdAt: Date;
+  updatedAt: Date;
 }
 ```
 
@@ -68,12 +77,22 @@ The project delivers a working prototype with the following components:
 ```
 
 ## User Flow
+
+### First-Time User
 1. User visits a supported research site (eLife, Sciety, or bioRxiv)
 2. Browser extension injects floating MyScience button
 3. User clicks button → opens MyScience in new tab
-4. MyScience displays personalized research feed
-5. User can save articles, browse recommendations
-6. "Return to [site]" button takes user back to original article
+4. Landing page displays with authentication options
+5. User signs in with Google, GitHub, or email/password
+6. Redirected to personalized home page
+7. User can complete profile with ORCID, research interests, bio
+
+### Returning User
+1. User visits MyScience (from extension or directly)
+2. Automatically authenticated via session
+3. Home page displays saved articles and recommendations
+4. User can save/unsave articles, update profile
+5. "Return to [site]" button (if from extension) goes back to original article
 
 ## Design System (November 2025 Refresh)
 
@@ -122,9 +141,10 @@ MyScience draws inspiration from modern content platforms:
 ### Key Principles
 - **Human-first**: Showcase researchers, not just papers
 - **Progressive disclosure**: Reveal complexity gradually
-- **Reduce friction**: Inline actions, no modals
+- **Reduce friction**: Inline actions, no modals, seamless auth
 - **Modern & fresh**: Clean spacing, subtle animations
 - **Accessibility**: WCAG 2.1 AA compliance, keyboard navigation
+- **Secure by default**: Server-side validation, protected routes, session management
 
 ## Installation & Setup
 
@@ -137,13 +157,39 @@ npm run dev  # Starts on http://localhost:5000
 ### Browser Extension
 See `browser-extension/README.md` for installation instructions.
 
-## Future Roadmap (Not Yet Implemented)
+## Pages & Features
 
-### Phase 2 - Authentication & Personalization
-- ORCID OAuth integration
-- Sciety API integration
-- User preference settings
-- Reading history tracking
+### Landing Page (`/`)
+- Modern hero section with feature highlights
+- Call-to-action buttons for sign-in
+- Responsive design
+- **Status**: ✅ Complete
+
+### Home Page (`/`) - Authenticated
+- Personalized hero with user name and stats
+- "For You" research feed
+- Topic filter pills (multi-select, logical OR)
+- Search functionality
+- Saved articles display
+- Researcher profile card
+- **Status**: ✅ Complete
+
+### Profile Page (`/profile`) - Authenticated
+- Avatar/profile picture URL input with live preview
+- Basic information (first/last name, email display)
+- Research identity (ORCID iD, Sciety ID)
+- Research interests (bio, subject areas with badge UI)
+- Save and Reset functionality
+- Form validation with Zod
+- **Status**: ✅ Complete
+
+## Future Roadmap
+
+### Phase 2 - Enhanced Personalization
+- ORCID OAuth integration (full SSO)
+- Sciety API integration for recommendations
+- User preference settings (email notifications, privacy)
+- Reading history tracking and analytics
 
 ### Phase 3 - Recommendations Engine
 - ML-based article recommendations
@@ -165,21 +211,29 @@ See `browser-extension/README.md` for installation instructions.
 
 ## Development Notes
 
-### Mock Data vs Real Data
-- **Saved Articles**: Fully functional with real API integration (persists in-memory during server session)
+### Authentication & Data Persistence
+- **Authentication**: Fully functional with Replit Auth (Google, GitHub, email/password)
+- **Saved Articles**: Real PostgreSQL database integration
+- **User Profiles**: Complete CRUD operations with database persistence
+- **Sessions**: PostgreSQL session store with 7-day expiration
 - **Recommendations**: Currently using mock article data for UI prototyping (3 hardcoded articles)
 - **Search**: Works across both saved and mock articles
-- **User Profiles**: Real API integration with localStorage-based identification
 
 Look for `// todo: remove mock functionality` comments to identify placeholder code for future enhancement.
 
-### localStorage Usage
-User IDs are stored in localStorage as `myscience_user_id`. This provides basic persistence without requiring authentication in the prototype phase.
+### Session & Data Persistence
+- **Authentication**: Session cookies managed by Express with PostgreSQL backing
+- **User Data**: All profile data persists in PostgreSQL
+- **Saved Articles**: Stored in PostgreSQL with foreign key to user
+- **Across Server Restarts**: Data persists (PostgreSQL database)
+- **End-to-End Testing**: Verified complete auth flow, profile management, and article saving
 
-### Data Persistence
-- **Within Server Session**: All saved articles and user profiles persist correctly across page reloads
-- **Across Server Restarts**: Data is lost (in-memory storage limitation)
-- **End-to-End Testing**: Verified complete flow from extension → save article → reload → persistence
+### Security Features
+- Server-side user ID injection (prevents privilege escalation)
+- Protected API routes with authentication middleware
+- Session-only cookies (httpOnly: true)
+- Zod validation on all user inputs
+- CSRF protection via session management
 
 ### Browser Extension Configuration
 - Extension uses Manifest V3 for Chrome/Edge/Firefox compatibility
