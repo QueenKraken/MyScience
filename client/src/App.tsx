@@ -4,6 +4,8 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { useLevelUpDetection } from "@/hooks/useLevelUpDetection";
+import { LevelUpModal } from "@/components/LevelUpModal";
 import HomePage from "@/pages/home";
 import Landing from "@/pages/landing";
 import ProfilePage from "@/pages/profile";
@@ -14,6 +16,10 @@ import NotFound from "@/pages/not-found";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  
+  // Always call hook unconditionally (React Rules of Hooks)
+  // Hook internally gates query via enabled flag based on auth
+  const { levelUpData, clearLevelUp } = useLevelUpDetection();
 
   // Show nothing while checking auth status
   if (isLoading) {
@@ -25,6 +31,16 @@ function Router() {
   }
 
   return (
+    <>
+      {levelUpData && (
+        <LevelUpModal
+          isOpen={true}
+          onClose={clearLevelUp}
+          oldLevel={levelUpData.oldLevel}
+          newLevel={levelUpData.newLevel}
+        />
+      )}
+    
     <Switch>
       {!isAuthenticated ? (
         <>
@@ -44,6 +60,7 @@ function Router() {
       )}
       <Route component={NotFound} />
     </Switch>
+    </>
   );
 }
 
