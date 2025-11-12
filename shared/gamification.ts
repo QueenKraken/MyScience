@@ -15,12 +15,13 @@ export function calculateXpForLevel(level: number): number {
 }
 
 // Calculate which level a user is at based on total XP
+// Clamped to max level 30 since LEVEL_DATA only goes to level 30
 export function calculateLevel(totalXp: number): number {
   let level = 0;
-  while (calculateXpForLevel(level + 1) <= totalXp) {
+  while (level < 30 && calculateXpForLevel(level + 1) <= totalXp) {
     level++;
   }
-  return level;
+  return Math.min(level, 30);
 }
 
 // Get XP needed to reach next level

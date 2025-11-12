@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { getUserProgress, getAllBadges, getUserBadges } from "./gamification";
 import { 
   insertSavedArticleSchema, 
   updateUserProfileSchema,
@@ -93,6 +94,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching user profile:", error);
       res.status(500).json({ error: "Failed to fetch user profile" });
+    }
+  });
+
+  // Gamification API endpoints
+  app.get("/api/gamification/progress", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const progress = await getUserProgress(userId);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching gamification progress:", error);
+      res.status(500).json({ error: "Failed to fetch progress" });
+    }
+  });
+
+  app.get("/api/gamification/badges", isAuthenticated, async (_req: any, res) => {
+    try {
+      const allBadges = await getAllBadges();
+      res.json(allBadges);
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      res.status(500).json({ error: "Failed to fetch badges" });
+    }
+  });
+
+  app.get("/api/gamification/user-badges", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userBadgesData = await getUserBadges(userId);
+      res.json(userBadgesData);
+    } catch (error) {
+      console.error("Error fetching user badges:", error);
+      res.status(500).json({ error: "Failed to fetch user badges" });
     }
   });
 
