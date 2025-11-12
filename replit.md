@@ -31,6 +31,23 @@ The project comprises a **Browser Extension** (Manifest V3) for injecting MyScie
     *   **Badge System**: 14 badges across 4 tiers (Common/Rare/Epic/Legendary) with triggers for actions like account creation, saves, likes, follows, profile completion
     *   **Badge Triggers**: Integrated into account creation (First Steps), article saves (First Save), article likes (First Like), user follows (Connector at 5 follows), ORCID connection (Identity Verified), and profile completion (Profile Complete - requires firstName, lastName, bio, and subject areas)
     *   **XP & Levels**: Tracked per user with automatic level-up detection and badge awarding
+    *   **XP Action System** (shared/gamification.ts):
+        *   **save_article**: 5 XP per save, daily cap 15 saves (max 75 XP/day), triggers First Save badge
+        *   **like_article**: 2 XP per like, daily cap 40 likes (max 80 XP/day), triggers First Like badge
+        *   **follow_user**: 3 XP per follow, daily cap 20 follows (max 60 XP/day), triggers Connector badge at 5 follows
+        *   **create_forum_post**: 10 XP per post, daily cap 10 posts (max 100 XP/day), triggers Community Starter badge
+        *   **like_forum_post**: 2 XP per like, daily cap 25 likes (max 50 XP/day)
+        *   **comment_forum_post**: 5 XP per comment, daily cap 25 comments (max 125 XP/day)
+        *   **send_message**: 1 XP per message, daily cap 50 messages (max 50 XP/day)
+        *   **create_discussion_space**: 25 XP per space, daily cap 5 spaces (max 125 XP/day)
+    *   **Daily Cap Enforcement** (user_action_counts table): Uses composite primary key (userId, actionType, date) with UPSERT pattern for atomic count increments and cap checking
+    *   **Gamification Service** (server/gamification.ts):
+        *   `recordGamifiedAction(userId, actionType)`: Core service that handles XP awards, cap enforcement, badge triggers, and level-up detection
+        *   Flow: Check daily cap → Award base action XP → Award action-triggered badge (if any) → Query final user state → Detect level-up from all XP sources → Award Immortal badge if level 30 → Return GamificationUpdate
+        *   Level-up detection: Captures oldLevel before XP grant, queries userAfter to get final level including badge XP, properly handles level-ups from both base action XP and badge-awarded XP
+        *   Non-blocking: All gamification calls wrapped in try-catch to prevent action failures
+    *   **Route Integration** (server/routes.ts): Wired into 8 endpoints (save article, like article, follow user, create forum post, like forum post, comment forum post, send message, create discussion space)
+    *   **Frontend Cache Invalidation**: ArticleCard automatically invalidates gamification cache after like actions to refresh XP display in real-time
     *   **API Endpoints**: `/api/gamification/progress`, `/api/gamification/badges`, `/api/gamification/user-badges`
     *   **Known Limitation (MVP)**: Badge awarding runs synchronously in request path for immediate UX feedback. Production should migrate to background queue (Bull/BullMQ) with post-commit hooks and WebSocket/SSE for real-time updates to prevent potential transaction deadlocks.
     *   **Database**: Uses PostgreSQL unique constraints to prevent duplicate badge awards under concurrent requests, with atomic badge seeding via `onConflictDoUpdate`
