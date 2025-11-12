@@ -296,7 +296,9 @@ export default function HomePage() {
 
               <aside className="space-y-6">
                 <ResearcherProfileCard
-                  userName={user?.firstName || null}
+                  userName={user?.firstName ?? null}
+                  userEmail={user?.email}
+                  avatarUrl={user?.profileImageUrl ? user.profileImageUrl : undefined}
                   savedCount={savedArticles.length}
                   readThisWeek={savedArticles.length}
                   topTopics={mockTopics.slice(0, 3).map(t => t.name)}

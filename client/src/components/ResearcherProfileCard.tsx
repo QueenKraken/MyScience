@@ -3,6 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { BookMarked, TrendingUp, Calendar, Settings } from "lucide-react";
+import { Link } from "wouter";
 
 interface ResearcherProfileCardProps {
   userName: string | null;
@@ -56,14 +57,16 @@ export function ResearcherProfileCard({
             )}
           </div>
 
-          <Button 
-            variant="ghost" 
-            size="icon"
-            data-testid="button-profile-settings"
-            aria-label="Profile settings"
-          >
-            <Settings className="w-4 h-4" />
-          </Button>
+          <Link href="/profile">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              data-testid="button-profile-settings"
+              aria-label="Profile settings"
+            >
+              <Settings className="w-4 h-4" />
+            </Button>
+          </Link>
         </div>
 
         {/* Stats Grid */}

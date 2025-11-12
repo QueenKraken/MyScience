@@ -176,11 +176,13 @@ See `browser-extension/README.md` for installation instructions.
 
 ### Profile Page (`/profile`) - Authenticated
 - Avatar/profile picture URL input with live preview
+- Profile picture displays on homepage ResearcherProfileCard
 - Basic information (first/last name, email display)
 - Research identity (ORCID iD, Sciety ID)
 - Research interests (bio, subject areas with badge UI)
 - Save and Reset functionality
 - Form validation with Zod
+- Settings button (gear icon) on ResearcherProfileCard navigates to profile
 - **Status**: ✅ Complete
 
 ## Future Roadmap
