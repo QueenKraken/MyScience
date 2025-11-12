@@ -37,6 +37,8 @@ export const users = pgTable("users", {
   scietyId: text("sciety_id"),
   bio: text("bio"),
   subjectAreas: text("subject_areas").array(),
+  institution: text("institution"),
+  contentPreferences: text("content_preferences").array(),
   // Gamification fields
   level: integer("level").notNull().default(0),
   totalXp: integer("total_xp").notNull().default(0),

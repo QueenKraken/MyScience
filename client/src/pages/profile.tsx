@@ -13,10 +13,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, User, Mail, BookOpen, Link as LinkIcon, X } from "lucide-react";
+import { Loader2, User, Mail, BookOpen, Link as LinkIcon, X, Building2, Settings, CheckCircle2, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import AppHeader from "@/components/AppHeader";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useQuery } from "@tanstack/react-query";
 
 type ProfileFormData = z.infer<typeof updateUserProfileSchema>;
 
@@ -34,6 +36,8 @@ export default function ProfilePage() {
       scietyId: "",
       bio: "",
       subjectAreas: [],
+      institution: "",
+      contentPreferences: [],
       profileImageUrl: "",
     },
   });
@@ -48,6 +52,8 @@ export default function ProfilePage() {
         scietyId: user.scietyId || "",
         bio: user.bio || "",
         subjectAreas: user.subjectAreas || [],
+        institution: user.institution || "",
+        contentPreferences: user.contentPreferences || [],
         profileImageUrl: user.profileImageUrl || "",
       });
     }
@@ -108,15 +114,30 @@ export default function ProfilePage() {
         scietyId: user.scietyId || "",
         bio: user.bio || "",
         subjectAreas: user.subjectAreas || [],
+        institution: user.institution || "",
+        contentPreferences: user.contentPreferences || [],
         profileImageUrl: user.profileImageUrl || "",
       });
     }
   };
 
+  // Check Bonfire account connection
+  const { data: bonfireAccount } = useQuery({
+    queryKey: ['/api/bonfire/account'],
+    enabled: !!user,
+  });
+
+  const contentPreferenceOptions = [
+    { value: "articles", label: "Research Articles" },
+    { value: "reviewed_preprints", label: "Reviewed Preprints" },
+    { value: "vors", label: "Versions of Record (VORs)" },
+    { value: "authors", label: "Specific Authors" },
+  ];
+
   if (isLoadingAuth) {
     return (
       <div className="min-h-screen bg-background">
-        <AppHeader returnUrl={null} returnSiteName={null} />
+        <AppHeader />
         <main className="max-w-4xl mx-auto px-6 py-12">
           <Skeleton className="h-12 w-64 mb-8" />
           <div className="space-y-6">
@@ -145,7 +166,7 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader returnUrl={null} returnSiteName={null} />
+      <AppHeader />
       
       <main className="max-w-4xl mx-auto px-6 py-12">
         <div className="mb-8">
@@ -270,6 +291,31 @@ export default function ProfilePage() {
                     Email is managed through your authentication provider
                   </FormDescription>
                 </FormItem>
+
+                <FormField
+                  control={form.control}
+                  name="institution"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4" />
+                        Affiliated Institution
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="e.g., Stanford University, Max Planck Institute"
+                          data-testid="input-institution"
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Your university, research institute, or employer
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
 
@@ -417,6 +463,136 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </FormItem>
+              </CardContent>
+            </Card>
+
+            {/* Content Preferences */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="w-5 h-5" />
+                  Content Preferences
+                </CardTitle>
+                <CardDescription>
+                  Tell us what types of research content you want to prioritize in your feed
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="contentPreferences"
+                  render={() => (
+                    <FormItem>
+                      <div className="space-y-3">
+                        {contentPreferenceOptions.map((option) => (
+                          <FormField
+                            key={option.value}
+                            control={form.control}
+                            name="contentPreferences"
+                            render={({ field }) => {
+                              const currentPreferences = field.value as string[] || [];
+                              return (
+                                <FormItem
+                                  key={option.value}
+                                  className="flex flex-row items-start space-x-3 space-y-0"
+                                >
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={currentPreferences.includes(option.value)}
+                                      onCheckedChange={(checked) => {
+                                        const updatedPreferences = checked
+                                          ? [...currentPreferences, option.value]
+                                          : currentPreferences.filter((val) => val !== option.value);
+                                        field.onChange(updatedPreferences);
+                                      }}
+                                      data-testid={`checkbox-preference-${option.value}`}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="font-normal cursor-pointer">
+                                    {option.label}
+                                  </FormLabel>
+                                </FormItem>
+                              );
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <FormDescription className="mt-3">
+                        Select all content types you'd like to see in your personalized feed
+                      </FormDescription>
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Connected Accounts */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <LinkIcon className="w-5 h-5" />
+                  Connected Accounts
+                </CardTitle>
+                <CardDescription>
+                  Manage your connections to external research platforms for enhanced recommendations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* ORCID Connection Status */}
+                <div className="flex items-center justify-between p-4 border rounded-md">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <LinkIcon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">ORCID iD</p>
+                      <p className="text-sm text-muted-foreground">
+                        {form.watch("orcid") ? form.watch("orcid") : "Not connected"}
+                      </p>
+                    </div>
+                  </div>
+                  {form.watch("orcid") ? (
+                    <Badge variant="default" className="gap-1" data-testid="badge-orcid-connected">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Connected
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="gap-1" data-testid="badge-orcid-not-connected">
+                      <XCircle className="w-3 h-3" />
+                      Not connected
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Bonfire Connection Status */}
+                <div className="flex items-center justify-between p-4 border rounded-md">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <LinkIcon className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Bonfire</p>
+                      <p className="text-sm text-muted-foreground">
+                        {bonfireAccount ? "Connected" : "Not connected"}
+                      </p>
+                    </div>
+                  </div>
+                  {bonfireAccount ? (
+                    <Badge variant="default" className="gap-1" data-testid="badge-bonfire-connected">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Connected
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary" className="gap-1" data-testid="badge-bonfire-not-connected">
+                      <XCircle className="w-3 h-3" />
+                      Not connected
+                    </Badge>
+                  )}
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                  More external integrations coming soon! We're working on connections to Sciety, bioRxiv, eLife, and other research platforms.
+                </p>
               </CardContent>
             </Card>
 
