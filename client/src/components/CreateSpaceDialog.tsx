@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -86,9 +86,10 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
         title: "Space created",
         description: "Your discussion space has been created successfully.",
       });
-      form.reset();
       onOpenChange(false);
-      setLocation(`/spaces/${newSpace.id}`);
+      setTimeout(() => {
+        setLocation(`/spaces/${newSpace.id}`);
+      }, 100);
     },
     onError: (error: Error) => {
       toast({
@@ -98,6 +99,13 @@ export function CreateSpaceDialog({ open, onOpenChange }: CreateSpaceDialogProps
       });
     },
   });
+
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
 
   const onSubmit = (data: CreateSpaceForm) => {
     createSpaceMutation.mutate(data);
