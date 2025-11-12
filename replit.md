@@ -23,7 +23,19 @@ The project comprises a **Browser Extension** (Manifest V3) for injecting MyScie
     *   **Design Principles**: Human-first design (e.g., ResearcherProfileCard, interest badges), progressive disclosure (expandable abstracts, hover tooltips), and friction reduction (inline actions, seamless auth).
     *   **Core Features**: Personalized "For You" research feed, topic filter pills with multi-select (logical OR) and dynamic filtering, search functionality, saved articles management, and social interactions (follow users/authors, like articles).
     *   **Notifications**: Real-time notification system with unread counts, read/unread management, and clickable notifications that navigate to user profiles. Dropdown shows loading state while fetching.
-    *   **Profile Management**: Comprehensive user profiles with ORCID, Sciety ID, bio, and subject areas. User profiles accessible at /profiles/:userId with tabs (Overview, Followers, Following), follow/unfollow functionality, and follower/following stats.
+    *   **Profile Management**: 
+        *   **Comprehensive User Profiles**: ORCID, Sciety ID, bio, subject areas, affiliated institution, and content preferences
+        *   **Public Profiles**: Accessible at /profiles/:userId with tabs (Overview, Followers, Following), follow/unfollow functionality, and follower/following stats
+        *   **Profile Fields**:
+            *   Basic info (name, email, profile image, institution)
+            *   Research identity (ORCID iD, Sciety ID)
+            *   Research interests (bio, subject areas)
+            *   **Content Preferences**: Multi-select options for feed priorities (Research Articles, Reviewed Preprints, VORs, Specific Authors)
+        *   **Connected Accounts Hub**: Central dashboard showing connection status for external platforms with real-time status indicators:
+            *   ORCID iD connection status (based on orcid field)
+            *   Bonfire connection status (OAuth-based, with loading/error states)
+            *   Future integrations: Sciety, bioRxiv, eLife, and other research platforms
+        *   **Vision**: Profile serves as central hub for aggregating research from multiple sources, supporting future SEO-powered recommendation engine
     *   **People Discovery**: /people page for discovering researchers with search (name, email, bio) and subject area filtering. Multi-select filter badges with logical OR for subject areas. User cards show profile image, name, email, bio preview, and subject badges.
     *   **Security**: Server-side user ID injection, authentication middleware for protected routes, httpOnly session cookies, Zod validation, parameterized SQL queries preventing injection attacks, and CSRF protection.
 *   **Gamification System**:
