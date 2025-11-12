@@ -60,9 +60,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const updates = updateUserProfileSchema.parse(req.body);
       
+      // Get user before update to check badge triggers
+      const userBefore = await storage.getUser(userId);
+      
       const user = await storage.updateUserProfile(userId, updates);
       if (!user) {
         return res.status(404).json({ error: "User profile not found" });
+      }
+      
+      // Check for badge triggers (best-effort, don't block on errors)
+      const badgeTriggers: import("@shared/gamification").BadgeTrigger[] = [];
+      
+      // Check if ORCID was connected (wasn't present before, is present now)
+      if (!userBefore?.orcid && user.orcid) {
+        badgeTriggers.push("connect_orcid");
+      }
+      
+      // Check if profile is complete (has all key fields filled)
+      const isProfileComplete = !!(
+        user.firstName &&
+        user.lastName &&
+        user.bio &&
+        user.subjectAreas &&
+        user.subjectAreas.length > 0
+      );
+      
+      if (isProfileComplete) {
+        badgeTriggers.push("complete_profile");
+      }
+      
+      // Award badges if any triggers matched (non-blocking)
+      if (badgeTriggers.length > 0) {
+        try {
+          await checkAndAwardBadges(userId, badgeTriggers);
+        } catch (badgeError) {
+          console.error("Error awarding profile badges:", badgeError);
+        }
       }
       
       res.json(user);
@@ -628,6 +661,145 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error marking all notifications as read:", error);
       res.status(500).json({ error: "Failed to mark all notifications as read" });
+    }
+  });
+
+  // ===== Activity Feed =====
+  app.get("/api/activity-feed", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 20;
+      
+      // Get user's recent activity
+      const [userSaves, userLikes, userBadges, following] = await Promise.all([
+        storage.getSavedArticles(userId),
+        storage.getUserLikes(userId),
+        db.select({
+          badge: badges,
+          earnedAt: userBadges.earnedAt,
+        })
+        .from(userBadges)
+        .innerJoin(badges, eq(badges.id, userBadges.badgeId))
+        .where(eq(userBadges.userId, userId))
+        .orderBy(desc(userBadges.earnedAt)),
+        storage.getFollowing(userId),
+      ]);
+      
+      // Get followed users' activities
+      const followedUserIds = following.map(u => u.id);
+      let socialSaves: any[] = [];
+      let socialLikes: any[] = [];
+      
+      if (followedUserIds.length > 0) {
+        [socialSaves, socialLikes] = await Promise.all([
+          db.select({
+            article: savedArticles,
+            user: users,
+          })
+          .from(savedArticles)
+          .innerJoin(users, eq(users.id, savedArticles.userId))
+          .where(sql`${savedArticles.userId} = ANY(${followedUserIds})`)
+          .orderBy(desc(savedArticles.savedAt))
+          .limit(10),
+          db.select({
+            like: articleLikes,
+            user: users,
+            article: savedArticles,
+          })
+          .from(articleLikes)
+          .innerJoin(users, eq(users.id, articleLikes.userId))
+          .leftJoin(savedArticles, eq(savedArticles.id, articleLikes.articleId))
+          .where(sql`${articleLikes.userId} = ANY(${followedUserIds})`)
+          .orderBy(desc(articleLikes.createdAt))
+          .limit(10),
+        ]);
+      }
+      
+      // Aggregate all activities with timestamps
+      const activities: any[] = [];
+      
+      // User's saves
+      userSaves.forEach(save => {
+        activities.push({
+          type: 'save',
+          action: `You saved "${save.title}"`,
+          timestamp: save.savedAt,
+          articleId: save.id,
+          articleTitle: save.title,
+          externalUrl: save.externalUrl,
+          isOwn: true,
+        });
+      });
+      
+      // User's likes
+      userLikes.forEach(like => {
+        activities.push({
+          type: 'like',
+          action: `You liked an article`,
+          timestamp: like.createdAt,
+          articleId: like.articleId,
+          isOwn: true,
+        });
+      });
+      
+      // User's badges
+      userBadges.forEach(({ badge, earnedAt }) => {
+        activities.push({
+          type: 'badge',
+          action: `Earned ${badge.name} badge`,
+          timestamp: earnedAt,
+          badgeName: badge.name,
+          badgeTier: badge.tier,
+          badgePoints: badge.points,
+          isOwn: true,
+        });
+      });
+      
+      // Followed users' saves
+      socialSaves.forEach(({ article, user }) => {
+        activities.push({
+          type: 'social_save',
+          action: `${user.firstName || user.email} saved "${article.title}"`,
+          timestamp: article.savedAt,
+          userId: user.id,
+          userName: user.firstName || user.email,
+          articleId: article.id,
+          articleTitle: article.title,
+          externalUrl: article.externalUrl,
+          isOwn: false,
+        });
+      });
+      
+      // Followed users' likes (only if we have article data)
+      socialLikes.forEach(({ like, user, article }) => {
+        if (article) {
+          activities.push({
+            type: 'social_like',
+            action: `${user.firstName || user.email} liked "${article.title}"`,
+            timestamp: like.createdAt,
+            userId: user.id,
+            userName: user.firstName || user.email,
+            articleId: article.id,
+            articleTitle: article.title,
+            externalUrl: article.externalUrl,
+            isOwn: false,
+          });
+        }
+      });
+      
+      // Sort by timestamp descending and limit
+      activities.sort((a, b) => {
+        const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        return timeB - timeA;
+      });
+      
+      const limitedActivities = activities.slice(0, limit);
+      
+      res.json(limitedActivities);
+    } catch (error) {
+      console.error("Error fetching activity feed:", error);
+      res.status(500).json({ error: "Failed to fetch activity feed" });
     }
   });
 
