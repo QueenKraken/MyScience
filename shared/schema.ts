@@ -226,6 +226,144 @@ export const bonfireAccounts = pgTable(
   (table) => [index("IDX_bonfire_accounts_bonfire_user").on(table.bonfireUserId)]
 );
 
+// ===== Communication Features =====
+
+// Article comments (threaded discussions on saved articles)
+export const comments = pgTable(
+  "comments",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    articleId: varchar("article_id").notNull().references(() => savedArticles.id, { onDelete: "cascade" }),
+    userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    parentCommentId: varchar("parent_comment_id"), // For nested replies - no FK to allow soft-delete
+    content: text("content").notNull(),
+    editedAt: timestamp("edited_at"),
+    deletedAt: timestamp("deleted_at"), // Soft delete for moderation
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    index("IDX_comments_article").on(table.articleId),
+    index("IDX_comments_user").on(table.userId),
+    index("IDX_comments_parent").on(table.parentCommentId),
+    index("IDX_comments_created").on(table.createdAt),
+  ]
+);
+
+// Forum posts (social media style public posts)
+export const forumPosts = pgTable(
+  "forum_posts",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    linkedArticleId: varchar("linked_article_id").references(() => savedArticles.id, { onDelete: "set null" }), // Optional article link
+    editedAt: timestamp("edited_at"),
+    deletedAt: timestamp("deleted_at"), // Soft delete
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    index("IDX_forum_posts_user").on(table.userId),
+    index("IDX_forum_posts_created").on(table.createdAt),
+    index("IDX_forum_posts_article").on(table.linkedArticleId),
+  ]
+);
+
+// Forum post likes
+export const forumPostLikes = pgTable(
+  "forum_post_likes",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    postId: varchar("post_id").notNull().references(() => forumPosts.id, { onDelete: "cascade" }),
+    userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => [
+    index("IDX_forum_post_likes_post").on(table.postId),
+    index("IDX_forum_post_likes_user").on(table.userId),
+    unique("UQ_forum_post_likes_pair").on(table.postId, table.userId),
+  ]
+);
+
+// Forum post comments
+export const forumPostComments = pgTable(
+  "forum_post_comments",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    postId: varchar("post_id").notNull().references(() => forumPosts.id, { onDelete: "cascade" }),
+    userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    editedAt: timestamp("edited_at"),
+    deletedAt: timestamp("deleted_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    index("IDX_forum_post_comments_post").on(table.postId),
+    index("IDX_forum_post_comments_user").on(table.userId),
+    index("IDX_forum_post_comments_created").on(table.createdAt),
+  ]
+);
+
+// Discussion spaces (private group discussions)
+export const discussionSpaces = pgTable(
+  "discussion_spaces",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    creatorId: varchar("creator_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    description: text("description"),
+    linkedArticleId: varchar("linked_article_id").references(() => savedArticles.id, { onDelete: "set null" }), // Optional article context
+    subjectArea: text("subject_area"), // Optional topic categorization
+    isPrivate: integer("is_private").notNull().default(1), // 1 = private (invite-only), 0 = public
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    index("IDX_discussion_spaces_creator").on(table.creatorId),
+    index("IDX_discussion_spaces_article").on(table.linkedArticleId),
+    index("IDX_discussion_spaces_subject").on(table.subjectArea),
+  ]
+);
+
+// Discussion space members
+export const discussionSpaceMembers = pgTable(
+  "discussion_space_members",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    spaceId: varchar("space_id").notNull().references(() => discussionSpaces.id, { onDelete: "cascade" }),
+    userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    role: text("role").notNull().default("member"), // "creator", "moderator", "member"
+    joinedAt: timestamp("joined_at").defaultNow(),
+  },
+  (table) => [
+    index("IDX_discussion_space_members_space").on(table.spaceId),
+    index("IDX_discussion_space_members_user").on(table.userId),
+    unique("UQ_discussion_space_members_pair").on(table.spaceId, table.userId),
+  ]
+);
+
+// Discussion space messages
+export const discussionSpaceMessages = pgTable(
+  "discussion_space_messages",
+  {
+    id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+    spaceId: varchar("space_id").notNull().references(() => discussionSpaces.id, { onDelete: "cascade" }),
+    userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    editedAt: timestamp("edited_at"),
+    deletedAt: timestamp("deleted_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    index("IDX_discussion_space_messages_space").on(table.spaceId),
+    index("IDX_discussion_space_messages_user").on(table.userId),
+    index("IDX_discussion_space_messages_created").on(table.createdAt),
+  ]
+);
+
 // Zod schemas
 export const upsertUserSchema = createInsertSchema(users).omit({
   createdAt: true,
@@ -301,6 +439,61 @@ export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
   earnedAt: true,
 });
 
+// Communication feature schemas
+export const insertCommentSchema = createInsertSchema(comments).omit({
+  id: true,
+  userId: true, // Injected server-side
+  createdAt: true,
+  updatedAt: true,
+  editedAt: true,
+  deletedAt: true,
+});
+
+export const insertForumPostSchema = createInsertSchema(forumPosts).omit({
+  id: true,
+  userId: true, // Injected server-side
+  createdAt: true,
+  updatedAt: true,
+  editedAt: true,
+  deletedAt: true,
+});
+
+export const insertForumPostLikeSchema = createInsertSchema(forumPostLikes).omit({
+  id: true,
+  userId: true, // Injected server-side
+  createdAt: true,
+});
+
+export const insertForumPostCommentSchema = createInsertSchema(forumPostComments).omit({
+  id: true,
+  userId: true, // Injected server-side
+  createdAt: true,
+  updatedAt: true,
+  editedAt: true,
+  deletedAt: true,
+});
+
+export const insertDiscussionSpaceSchema = createInsertSchema(discussionSpaces).omit({
+  id: true,
+  creatorId: true, // Injected server-side
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertDiscussionSpaceMemberSchema = createInsertSchema(discussionSpaceMembers).omit({
+  id: true,
+  joinedAt: true,
+});
+
+export const insertDiscussionSpaceMessageSchema = createInsertSchema(discussionSpaceMessages).omit({
+  id: true,
+  userId: true, // Injected server-side
+  createdAt: true,
+  updatedAt: true,
+  editedAt: true,
+  deletedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -330,6 +523,22 @@ export type Badge = typeof badges.$inferSelect;
 export type InsertBadge = z.infer<typeof insertBadgeSchema>;
 export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+
+// Communication feature types
+export type Comment = typeof comments.$inferSelect;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type ForumPost = typeof forumPosts.$inferSelect;
+export type InsertForumPost = z.infer<typeof insertForumPostSchema>;
+export type ForumPostLike = typeof forumPostLikes.$inferSelect;
+export type InsertForumPostLike = z.infer<typeof insertForumPostLikeSchema>;
+export type ForumPostComment = typeof forumPostComments.$inferSelect;
+export type InsertForumPostComment = z.infer<typeof insertForumPostCommentSchema>;
+export type DiscussionSpace = typeof discussionSpaces.$inferSelect;
+export type InsertDiscussionSpace = z.infer<typeof insertDiscussionSpaceSchema>;
+export type DiscussionSpaceMember = typeof discussionSpaceMembers.$inferSelect;
+export type InsertDiscussionSpaceMember = z.infer<typeof insertDiscussionSpaceMemberSchema>;
+export type DiscussionSpaceMessage = typeof discussionSpaceMessages.$inferSelect;
+export type InsertDiscussionSpaceMessage = z.infer<typeof insertDiscussionSpaceMessageSchema>;
 
 // Gamification API response types
 export interface GamificationProgress {
