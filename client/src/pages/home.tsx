@@ -9,7 +9,7 @@ import { ResearcherProfileCard } from "@/components/ResearcherProfileCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, BookMarked as BookMarkedIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ import type { User, SavedArticle } from "@shared/schema";
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [showSavedOnly, setShowSavedOnly] = useState(false);
   const { toast } = useToast();
   const { user, isLoading: isLoadingAuth } = useAuth();
   
@@ -164,8 +165,13 @@ export default function HomePage() {
     })),
   ] : [];
 
-  // Filter by search query and selected topics
+  // Filter by search query, selected topics, and saved-only view
   const filteredArticles = displayArticles.filter(article => {
+    // Filter by saved-only view
+    if (showSavedOnly && !article.isSaved) {
+      return false;
+    }
+
     // Filter by search query
     const matchesSearch = !searchQuery || 
       article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -197,6 +203,7 @@ export default function HomePage() {
           userName={user?.firstName || undefined}
           savedCount={savedArticles.length}
           recommendationsCount={mockArticles.length}
+          onViewSaved={() => setShowSavedOnly(true)}
         />
 
         <div className="max-w-7xl mx-auto px-6 pb-12">
@@ -228,11 +235,29 @@ export default function HomePage() {
                   />
                 </div>
 
+                {/* Saved Articles Filter Indicator */}
+                {showSavedOnly && (
+                  <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-lg" data-testid="filter-saved-only-banner">
+                    <div className="flex items-center gap-2">
+                      <BookMarkedIcon className="w-4 h-4 text-primary" aria-hidden="true" />
+                      <span className="font-medium text-sm">Showing saved articles only</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowSavedOnly(false)}
+                      data-testid="button-clear-saved-filter"
+                    >
+                      Show all articles
+                    </Button>
+                  </div>
+                )}
+
                 {/* For You Section - Spotify style */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h2 className="font-heading text-2xl font-bold" data-testid="heading-for-you">
-                      For You
+                      {showSavedOnly ? "Your Saved Articles" : "For You"}
                     </h2>
                     {selectedTopics.length > 0 && (
                       <Button
@@ -282,9 +307,11 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <EmptyState
-                    title="No articles found"
+                    title={showSavedOnly ? "No saved articles yet" : "No articles found"}
                     description={
-                      selectedTopics.length > 0
+                      showSavedOnly
+                        ? "Start saving articles you're interested in, and they'll appear here for easy access."
+                        : selectedTopics.length > 0
                         ? `No articles match the selected topics. Try different filters.`
                         : searchQuery
                         ? `No articles match "${searchQuery}". Try a different search term.`
@@ -302,6 +329,7 @@ export default function HomePage() {
                   savedCount={savedArticles.length}
                   readThisWeek={savedArticles.length}
                   topTopics={mockTopics.slice(0, 3).map(t => t.name)}
+                  onViewSaved={() => setShowSavedOnly(true)}
                 />
                 <TopicsWidget 
                   topics={mockTopics}

@@ -4,12 +4,14 @@ interface HeroSectionProps {
   userName?: string;
   savedCount?: number;
   recommendationsCount?: number;
+  onViewSaved?: () => void;
 }
 
 export default function HeroSection({
   userName,
   savedCount = 0,
   recommendationsCount = 0,
+  onViewSaved,
 }: HeroSectionProps) {
   return (
     <section className="py-16 px-6">
@@ -22,12 +24,18 @@ export default function HeroSection({
         </p>
         
         <div className="flex flex-wrap justify-center gap-6 pt-6">
-          <div className="text-center">
+          <button 
+            onClick={onViewSaved}
+            disabled={savedCount === 0}
+            className="text-center hover-elevate active-elevate-2 rounded-lg p-4 -m-4 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            data-testid="button-view-saved"
+            aria-label={savedCount > 0 ? "View saved articles" : "No saved articles yet"}
+          >
             <div className="text-3xl font-bold" data-testid="text-saved-count">
               {savedCount}
             </div>
             <div className="text-sm text-muted-foreground">Articles saved</div>
-          </div>
+          </button>
           <div className="w-px bg-border" />
           <div className="text-center">
             <div className="text-3xl font-bold" data-testid="text-recommendations-count">

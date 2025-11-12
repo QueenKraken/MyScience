@@ -12,6 +12,7 @@ interface ResearcherProfileCardProps {
   savedCount: number;
   readThisWeek?: number;
   topTopics?: string[];
+  onViewSaved?: () => void;
 }
 
 export function ResearcherProfileCard({
@@ -21,6 +22,7 @@ export function ResearcherProfileCard({
   savedCount,
   readThisWeek = 0,
   topTopics = [],
+  onViewSaved,
 }: ResearcherProfileCardProps) {
   const initials = userName
     ? userName
@@ -71,15 +73,21 @@ export function ResearcherProfileCard({
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
+          <button 
+            onClick={onViewSaved}
+            disabled={savedCount === 0}
+            className="space-y-1 text-left hover-elevate active-elevate-2 rounded-lg p-3 -m-3 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+            data-testid="button-view-saved-profile"
+            aria-label={savedCount > 0 ? "View saved articles" : "No saved articles yet"}
+          >
             <div className="flex items-center gap-2 text-muted-foreground">
-              <BookMarked className="w-4 h-4" />
+              <BookMarked className="w-4 h-4" aria-hidden="true" />
               <span className="text-xs font-medium">Saved</span>
             </div>
             <p className="text-2xl font-bold font-heading" data-testid="text-stat-saved">
               {savedCount}
             </p>
-          </div>
+          </button>
 
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-muted-foreground">
