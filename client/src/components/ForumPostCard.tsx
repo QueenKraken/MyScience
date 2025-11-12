@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "wouter";
+import { ForumPostComments } from "./ForumPostComments";
 
 interface User {
   id: string;
@@ -45,6 +46,7 @@ interface ForumPostCardProps {
 export function ForumPostCard({ post }: ForumPostCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+  const [areCommentsOpen, setAreCommentsOpen] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -255,14 +257,23 @@ export function ForumPostCard({ post }: ForumPostCardProps) {
               </span>
             </Button>
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setAreCommentsOpen(!areCommentsOpen)}
+              className="gap-2"
+              data-testid={`button-comments-${post.id}`}
+            >
               <MessageSquare className="w-4 h-4" />
               <span data-testid={`text-comments-count-${post.id}`}>
                 {post.commentsCount || 0} {post.commentsCount === 1 ? "comment" : "comments"}
               </span>
-            </div>
+            </Button>
           </div>
         )}
+
+        {/* Comments section */}
+        {areCommentsOpen && <ForumPostComments postId={post.id} />}
       </div>
     </Card>
   );
