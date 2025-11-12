@@ -11,9 +11,16 @@ import {
   insertArticleLikeSchema,
   insertUserBlockSchema,
   insertUserMuteSchema,
-  insertUserReportSchema
+  insertUserReportSchema,
+  savedArticles,
+  users,
+  badges,
+  userBadges,
+  articleLikes
 } from "@shared/schema";
 import { z } from "zod";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (Replit Auth integration)
@@ -671,17 +678,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const limit = parseInt(req.query.limit as string) || 20;
       
       // Get user's recent activity
-      const [userSaves, userLikes, userBadges, following] = await Promise.all([
+      const earnedBadgesQuery = db.select({
+        badge: badges,
+        earnedAt: userBadges.earnedAt,
+      })
+      .from(userBadges)
+      .innerJoin(badges, eq(badges.id, userBadges.badgeId))
+      .where(eq(userBadges.userId, userId))
+      .orderBy(desc(userBadges.earnedAt));
+      
+      const [userSaves, userLikes, earnedBadges, following] = await Promise.all([
         storage.getSavedArticles(userId),
         storage.getUserLikes(userId),
-        db.select({
-          badge: badges,
-          earnedAt: userBadges.earnedAt,
-        })
-        .from(userBadges)
-        .innerJoin(badges, eq(badges.id, userBadges.badgeId))
-        .where(eq(userBadges.userId, userId))
-        .orderBy(desc(userBadges.earnedAt)),
+        earnedBadgesQuery,
         storage.getFollowing(userId),
       ]);
       
@@ -743,7 +752,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       // User's badges
-      userBadges.forEach(({ badge, earnedAt }) => {
+      earnedBadges.forEach(({ badge, earnedAt }: any) => {
         activities.push({
           type: 'badge',
           action: `Earned ${badge.name} badge`,

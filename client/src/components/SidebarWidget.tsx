@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "wouter";
 
 interface SidebarWidgetProps {
   title: string;
@@ -62,6 +63,7 @@ export function TopicsWidget({ topics, selectedTopics = [], onTopicClick }: Topi
 interface ActivityItem {
   action: string;
   time: string;
+  link?: string;
 }
 
 interface RecentActivityWidgetProps {
@@ -72,12 +74,24 @@ export function RecentActivityWidget({ activities }: RecentActivityWidgetProps) 
   return (
     <SidebarWidget title="Recent Activity">
       <div className="space-y-3">
-        {activities.map((activity, idx) => (
-          <div key={idx} className="text-sm" data-testid={`activity-${idx}`}>
-            <div className="font-medium">{activity.action}</div>
-            <div className="text-muted-foreground text-xs">{activity.time}</div>
-          </div>
-        ))}
+        {activities.length > 0 ? (
+          activities.map((activity, idx) => (
+            <div key={idx} className="text-sm" data-testid={`activity-${idx}`}>
+              {activity.link ? (
+                <Link href={activity.link}>
+                  <div className="font-medium hover-elevate active-elevate-2 rounded px-2 py-1 -mx-2 cursor-pointer">
+                    {activity.action}
+                  </div>
+                </Link>
+              ) : (
+                <div className="font-medium">{activity.action}</div>
+              )}
+              <div className="text-muted-foreground text-xs pl-2">{activity.time}</div>
+            </div>
+          ))
+        ) : (
+          <div className="text-sm text-muted-foreground">No recent activity</div>
+        )}
       </div>
     </SidebarWidget>
   );

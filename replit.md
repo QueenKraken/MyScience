@@ -28,12 +28,23 @@ The project comprises a **Browser Extension** (Manifest V3) for injecting MyScie
     *   **Security**: Server-side user ID injection, authentication middleware for protected routes, httpOnly session cookies, Zod validation, parameterized SQL queries preventing injection attacks, and CSRF protection.
 *   **Gamification System**:
     *   **Level Progression**: 31 levels (0-30) using XP formula: `XP_required(n) = 100 × n^1.7` for exponential growth
-    *   **Badge System**: 14 badges across 4 tiers (Common/Rare/Epic/Legendary) with triggers for actions like account creation, saves, likes, follows
-    *   **Badge Triggers**: Integrated into account creation (First Steps), article saves (First Save), article likes (First Like), and user follows (Connector at 5 follows)
+    *   **Badge System**: 14 badges across 4 tiers (Common/Rare/Epic/Legendary) with triggers for actions like account creation, saves, likes, follows, profile completion
+    *   **Badge Triggers**: Integrated into account creation (First Steps), article saves (First Save), article likes (First Like), user follows (Connector at 5 follows), ORCID connection (Identity Verified), and profile completion (Profile Complete - requires firstName, lastName, bio, and subject areas)
     *   **XP & Levels**: Tracked per user with automatic level-up detection and badge awarding
     *   **API Endpoints**: `/api/gamification/progress`, `/api/gamification/badges`, `/api/gamification/user-badges`
     *   **Known Limitation (MVP)**: Badge awarding runs synchronously in request path for immediate UX feedback. Production should migrate to background queue (Bull/BullMQ) with post-commit hooks and WebSocket/SSE for real-time updates to prevent potential transaction deadlocks.
     *   **Database**: Uses PostgreSQL unique constraints to prevent duplicate badge awards under concurrent requests, with atomic badge seeding via `onConflictDoUpdate`
+*   **Activity Feed System**:
+    *   **Real-time Activity**: GET `/api/activity-feed` endpoint aggregates user's own activities (saves, likes, earned badges) and social activities from followed users
+    *   **Activity Types**: Displays saves, likes, badge awards, and social activities (followed users' saves and likes)
+    *   **Timestamps**: Shows relative time format (e.g., "2 hours ago", "Yesterday")
+    *   **Interactive Links**: Activities include clickable links to articles and user profiles
+    *   **Recent Activity Widget**: Displays last 10 activities in homepage sidebar with formatted timestamps and hover states
+*   **Navigation & Spacing**:
+    *   **AppHeader Design**: Improved spacing with logical grouping (navigation items, user controls, status indicators)
+    *   **Visual Hierarchy**: Vertical separator between navigation and user controls, consistent gaps for better breathing room
+    *   **Adaptive Header**: Shows different navigation for authenticated vs unauthenticated users
+    *   **Logout System**: User menu dropdown with Profile and Logout options, session destruction on logout
 
 ## External Dependencies
 *   **Authentication Providers**: Google, GitHub (via Replit Auth OIDC)

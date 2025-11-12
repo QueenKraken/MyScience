@@ -16,6 +16,25 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import type { User, SavedArticle } from "@shared/schema";
 
+// Format timestamp to relative time (e.g., "2 hours ago")
+function formatActivityTime(timestamp: string | null | undefined): string {
+  if (!timestamp) return "Recently";
+  
+  const now = new Date();
+  const activityTime = new Date(timestamp);
+  const diffMs = now.getTime() - activityTime.getTime();
+  const diffMinutes = Math.floor(diffMs / (1000 * 60));
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffMinutes < 1) return "Just now";
+  if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return activityTime.toLocaleDateString();
+}
+
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -116,12 +135,11 @@ export default function HomePage() {
     { name: "Ethics", count: 9 },
   ];
 
-  // todo: remove mock functionality
-  const mockActivities = [
-    { action: "Saved article on CRISPR", time: "2 hours ago" },
-    { action: "Viewed paper on climate models", time: "5 hours ago" },
-    { action: "Connected ORCID", time: "Yesterday" },
-  ];
+  // Fetch real activity feed
+  const { data: activities = [] } = useQuery<any[]>({
+    queryKey: ['/api/activity-feed'],
+    enabled: !!user,
+  });
 
   const hasConnectedOrcid = !!user?.orcid;
   // Show content if user has ORCID, saved articles, OR if we have recommendations to show
@@ -337,7 +355,11 @@ export default function HomePage() {
                   selectedTopics={selectedTopics}
                   onTopicClick={(topic) => toggleTopic(topic)}
                 />
-                <RecentActivityWidget activities={mockActivities} />
+                <RecentActivityWidget activities={activities.slice(0, 10).map((activity: any) => ({
+                  action: activity.action,
+                  time: formatActivityTime(activity.timestamp),
+                  link: activity.externalUrl || (activity.userId ? `/profiles/${activity.userId}` : undefined),
+                }))} />
               </aside>
             </div>
           ) : (
