@@ -179,6 +179,14 @@ See `browser-extension/README.md` for installation instructions.
   - "Show all articles" button clears the filter
   - Heading changes to "Your Saved Articles" when filtered
   - Buttons disabled when no saved articles exist
+- **Topics Widget** (Sidebar):
+  - Displays all available topics with article counts
+  - Click any topic to filter articles matching that topic
+  - Multi-select supported (shows articles matching ANY selected topic)
+  - Selected topics are highlighted with primary color background and badge
+  - Synchronized with filter pills at top of feed
+  - Filter pills only appear when topics are selected
+  - "Clear filters" button removes all topic filters
 - **Status**: ✅ Complete
 
 ### Profile Page (`/profile`) - Authenticated

@@ -271,20 +271,22 @@ export default function HomePage() {
                     )}
                   </div>
 
-                  {/* Topic Filter Pills */}
-                  <div className="flex flex-wrap gap-2" data-testid="container-topic-filters">
-                    {mockTopics.map((topic) => (
-                      <Badge
-                        key={topic.name}
-                        variant={selectedTopics.includes(topic.name) ? "default" : "secondary"}
-                        className="cursor-pointer hover-elevate active-elevate-2 transition-all"
-                        onClick={() => toggleTopic(topic.name)}
-                        data-testid={`filter-topic-${topic.name.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        {topic.name}
-                      </Badge>
-                    ))}
-                  </div>
+                  {/* Topic Filter Pills - Only show when topics are selected */}
+                  {selectedTopics.length > 0 && (
+                    <div className="flex flex-wrap gap-2" data-testid="container-topic-filters">
+                      {selectedTopics.map((topicName) => (
+                        <Badge
+                          key={topicName}
+                          variant="default"
+                          className="cursor-pointer hover-elevate active-elevate-2 transition-all"
+                          onClick={() => toggleTopic(topicName)}
+                          data-testid={`filter-topic-${topicName.toLowerCase().replace(/\s+/g, '-')}`}
+                        >
+                          {topicName}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {filteredArticles.length > 0 ? (
@@ -333,7 +335,8 @@ export default function HomePage() {
                 />
                 <TopicsWidget 
                   topics={mockTopics}
-                  onTopicClick={(topic) => console.log("Filter by topic:", topic)}
+                  selectedTopics={selectedTopics}
+                  onTopicClick={(topic) => toggleTopic(topic)}
                 />
                 <RecentActivityWidget activities={mockActivities} />
               </aside>

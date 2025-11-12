@@ -24,26 +24,36 @@ interface TopicItem {
 
 interface TopicsWidgetProps {
   topics: TopicItem[];
+  selectedTopics?: string[];
   onTopicClick?: (topic: string) => void;
 }
 
-export function TopicsWidget({ topics, onTopicClick }: TopicsWidgetProps) {
+export function TopicsWidget({ topics, selectedTopics = [], onTopicClick }: TopicsWidgetProps) {
   return (
     <SidebarWidget title="Topics">
       <div className="space-y-2">
-        {topics.map((topic, idx) => (
-          <button
-            key={idx}
-            onClick={() => onTopicClick?.(topic.name)}
-            className="flex items-center justify-between w-full text-left px-3 py-2 rounded-md hover-elevate active-elevate-2"
-            data-testid={`button-topic-${idx}`}
-          >
-            <span className="text-sm">{topic.name}</span>
-            <Badge variant="secondary" data-testid={`badge-topic-count-${idx}`}>
-              {topic.count}
-            </Badge>
-          </button>
-        ))}
+        {topics.map((topic, idx) => {
+          const isSelected = selectedTopics.includes(topic.name);
+          return (
+            <button
+              key={idx}
+              onClick={() => onTopicClick?.(topic.name)}
+              className={`flex items-center justify-between w-full text-left px-3 py-2 rounded-md hover-elevate active-elevate-2 transition-colors ${
+                isSelected ? 'bg-primary/10 border border-primary/20' : ''
+              }`}
+              data-testid={`button-topic-${idx}`}
+              aria-pressed={isSelected}
+            >
+              <span className={`text-sm ${isSelected ? 'font-medium' : ''}`}>{topic.name}</span>
+              <Badge 
+                variant={isSelected ? "default" : "secondary"} 
+                data-testid={`badge-topic-count-${idx}`}
+              >
+                {topic.count}
+              </Badge>
+            </button>
+          );
+        })}
       </div>
     </SidebarWidget>
   );
