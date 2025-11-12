@@ -317,6 +317,8 @@ export class DatabaseStorage implements IStorage {
         scietyId: users.scietyId,
         bio: users.bio,
         subjectAreas: users.subjectAreas,
+        level: users.level,
+        totalXp: users.totalXp,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
@@ -338,6 +340,8 @@ export class DatabaseStorage implements IStorage {
         scietyId: users.scietyId,
         bio: users.bio,
         subjectAreas: users.subjectAreas,
+        level: users.level,
+        totalXp: users.totalXp,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
@@ -506,6 +510,8 @@ export class DatabaseStorage implements IStorage {
         scietyId: users.scietyId,
         bio: users.bio,
         subjectAreas: users.subjectAreas,
+        level: users.level,
+        totalXp: users.totalXp,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
@@ -557,6 +563,8 @@ export class DatabaseStorage implements IStorage {
         scietyId: users.scietyId,
         bio: users.bio,
         subjectAreas: users.subjectAreas,
+        level: users.level,
+        totalXp: users.totalXp,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })

@@ -26,6 +26,14 @@ The project comprises a **Browser Extension** (Manifest V3) for injecting MyScie
     *   **Profile Management**: Comprehensive user profiles with ORCID, Sciety ID, bio, and subject areas. User profiles accessible at /profiles/:userId with tabs (Overview, Followers, Following), follow/unfollow functionality, and follower/following stats.
     *   **People Discovery**: /people page for discovering researchers with search (name, email, bio) and subject area filtering. Multi-select filter badges with logical OR for subject areas. User cards show profile image, name, email, bio preview, and subject badges.
     *   **Security**: Server-side user ID injection, authentication middleware for protected routes, httpOnly session cookies, Zod validation, parameterized SQL queries preventing injection attacks, and CSRF protection.
+*   **Gamification System**:
+    *   **Level Progression**: 31 levels (0-30) using XP formula: `XP_required(n) = 100 × n^1.7` for exponential growth
+    *   **Badge System**: 14 badges across 4 tiers (Common/Rare/Epic/Legendary) with triggers for actions like account creation, saves, likes, follows
+    *   **Badge Triggers**: Integrated into account creation (First Steps), article saves (First Save), article likes (First Like), and user follows (Connector at 5 follows)
+    *   **XP & Levels**: Tracked per user with automatic level-up detection and badge awarding
+    *   **API Endpoints**: `/api/gamification/progress`, `/api/gamification/badges`, `/api/gamification/user-badges`
+    *   **Known Limitation (MVP)**: Badge awarding runs synchronously in request path for immediate UX feedback. Production should migrate to background queue (Bull/BullMQ) with post-commit hooks and WebSocket/SSE for real-time updates to prevent potential transaction deadlocks.
+    *   **Database**: Uses PostgreSQL unique constraints to prevent duplicate badge awards under concurrent requests, with atomic badge seeding via `onConflictDoUpdate`
 
 ## External Dependencies
 *   **Authentication Providers**: Google, GitHub (via Replit Auth OIDC)

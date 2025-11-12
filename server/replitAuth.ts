@@ -7,6 +7,7 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { checkAndAwardBadges } from "./gamification";
 
 const getOidcConfig = memoize(
   async () => {
@@ -76,7 +77,23 @@ export async function setupAuth(app: Express) {
   ) => {
     const user = {};
     updateUserSession(user, tokens);
-    await upsertUser(tokens.claims());
+    const claims = tokens.claims();
+    await upsertUser(claims);
+    
+    // Award "First Steps" badge on account creation (idempotent - safe to run on every login)
+    // CRITICAL: Isolated try/catch ensures badge errors never block login
+    // TODO (Production): Move to post-commit queue to prevent blocking login path
+    if (claims?.sub) {
+      try {
+        await checkAndAwardBadges(claims.sub, ["create_account"]).catch((error) => {
+          console.error("Error awarding create_account badge (non-blocking):", error);
+        });
+      } catch (error) {
+        // Double isolation: catch both promise rejection and sync errors
+        console.error("Error in badge awarding wrapper (non-blocking):", error);
+      }
+    }
+    
     verified(null, user);
   };
 

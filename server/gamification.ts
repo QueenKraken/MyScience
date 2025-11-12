@@ -2,6 +2,7 @@ import { db } from "./db";
 import { users, badges, userBadges } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { calculateLevel, type BadgeTrigger } from "@shared/gamification";
+import { storage } from "./storage";
 
 export interface BadgeAward {
   badgeId: string;
@@ -26,6 +27,15 @@ export interface GamificationUpdate {
   currentLevel: number;
 }
 
+// TODO (Production): Move badge awarding to background queue
+// Currently, badge checks run synchronously in the request path. This provides
+// immediate UX feedback but creates risk when storage methods add transactions.
+// For production, migrate to:
+// 1. Post-commit hooks that enqueue badge check jobs
+// 2. Background worker (Bull/BullMQ) that processes badge awards
+// 3. WebSocket/SSE to push real-time badge/level updates to client
+// This decouples badge logic from request-critical paths and prevents deadlocks.
+
 /**
  * Award a badge to a user if they haven't already earned it
  */
@@ -43,6 +53,15 @@ export async function awardBadgeByTrigger(
   if (!badge) {
     console.log(`No badge found for trigger: ${trigger}`);
     return null;
+  }
+
+  // Check threshold conditions for certain badges
+  if (trigger === "follow_5_users") {
+    const stats = await storage.getFollowStats(userId);
+    if (stats.followingCount < 5) {
+      // User hasn't reached 5 follows yet
+      return null;
+    }
   }
 
   // Award the badge - rely on unique constraint to prevent duplicates

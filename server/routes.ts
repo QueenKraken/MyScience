@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { getUserProgress, getAllBadges, getUserBadges } from "./gamification";
+import { getUserProgress, getAllBadges, getUserBadges, checkAndAwardBadges } from "./gamification";
 import { 
   insertSavedArticleSchema, 
   updateUserProfileSchema,
@@ -149,6 +149,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const articleData = insertSavedArticleSchema.parse(req.body);
       // Inject userId server-side for security
       const article = await storage.saveArticle({ ...articleData, userId });
+      
+      // Award "First Save" badge (best-effort, doesn't block if it fails)
+      // TODO (Production): Move to post-commit queue once storage adds transactions
+      try {
+        await checkAndAwardBadges(userId, ["first_save"]);
+      } catch (badgeError) {
+        console.error("Error awarding first_save badge:", badgeError);
+      }
+      
       res.status(201).json(article);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -193,6 +202,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const follow = await storage.followUser(followerId, followingId);
+      
+      // Check for "Connector" badge (5 follows) - service handles threshold check
+      // TODO (Production): Move to post-commit queue once storage adds transactions
+      try {
+        await checkAndAwardBadges(followerId, ["follow_5_users"]);
+      } catch (badgeError) {
+        console.error("Error awarding follow_5_users badge:", badgeError);
+      }
+      
       res.status(201).json(follow);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -338,6 +356,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const articleSource = req.body.articleSource || "external";
       
       const like = await storage.likeArticle(userId, articleId, articleSource);
+      
+      // Award "First Like" badge (best-effort, doesn't block if it fails)
+      // TODO (Production): Move to post-commit queue once storage adds transactions
+      try {
+        await checkAndAwardBadges(userId, ["first_like"]);
+      } catch (badgeError) {
+        console.error("Error awarding first_like badge:", badgeError);
+      }
+      
       res.status(201).json(like);
     } catch (error) {
       if (error instanceof z.ZodError) {
