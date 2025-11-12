@@ -256,7 +256,7 @@ export async function getUserProgress(userId: string) {
   const progress = getLevelProgress(user.totalXp, user.level);
 
   return {
-    level: user.level,
+    currentLevel: user.level,
     totalXp: user.totalXp,
     levelInfo,
     progress,

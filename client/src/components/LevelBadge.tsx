@@ -2,8 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getLevelInfo } from "@shared/gamification";
 import type { GamificationProgress } from "@shared/schema";
+import { useAuth } from "@/hooks/useAuth";
 
 interface LevelBadgeProps {
   showLabel?: boolean;
@@ -11,11 +11,15 @@ interface LevelBadgeProps {
 }
 
 export function LevelBadge({ showLabel = false, className = "" }: LevelBadgeProps) {
+  const { user } = useAuth();
+  const userId = user?.id || null;
+
   const { data: progress, isLoading } = useQuery<GamificationProgress>({
-    queryKey: ["/api/gamification/progress"],
+    queryKey: ["/api/gamification/progress", userId], // User-specific cache to match useLevelUpDetection
+    enabled: !!userId, // Only fetch when authenticated
   });
 
-  if (isLoading) {
+  if (!userId || isLoading) {
     return <Skeleton className={`h-7 w-16 ${className}`} data-testid="skeleton-level-badge" />;
   }
 
@@ -23,7 +27,7 @@ export function LevelBadge({ showLabel = false, className = "" }: LevelBadgeProp
     return null;
   }
 
-  const levelInfo = getLevelInfo(progress.currentLevel);
+  const levelInfo = progress.levelInfo;
 
   return (
     <Link href="/gamification" data-testid="link-gamification">

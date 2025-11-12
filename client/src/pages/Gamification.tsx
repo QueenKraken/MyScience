@@ -7,6 +7,7 @@ import { getLevelInfo, LEVEL_DATA, BADGE_DEFINITIONS } from "@shared/gamificatio
 import type { BadgeTier } from "@shared/gamification";
 import type { Badge, UserBadge, GamificationProgress } from "@shared/schema";
 import { Trophy, Award, Zap, Star } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const tierIcons: Record<BadgeTier, typeof Trophy> = {
   Common: Zap,
@@ -23,16 +24,22 @@ const tierColors: Record<BadgeTier, string> = {
 };
 
 export default function Gamification() {
+  const { user } = useAuth();
+  const userId = user?.id || null;
+
   const { data: progress, isLoading: progressLoading } = useQuery<GamificationProgress>({
-    queryKey: ["/api/gamification/progress"],
+    queryKey: ["/api/gamification/progress", userId], // User-specific cache
+    enabled: !!userId, // Only fetch when authenticated
   });
 
   const { data: badges, isLoading: badgesLoading } = useQuery<Badge[]>({
     queryKey: ["/api/gamification/badges"],
+    enabled: !!userId, // Only fetch when authenticated
   });
 
   const { data: userBadges, isLoading: userBadgesLoading } = useQuery<UserBadge[]>({
-    queryKey: ["/api/gamification/user-badges"],
+    queryKey: ["/api/gamification/user-badges", userId], // User-specific cache
+    enabled: !!userId, // Only fetch when authenticated
   });
 
   if (progressLoading || badgesLoading || userBadgesLoading) {
@@ -56,13 +63,11 @@ export default function Gamification() {
     );
   }
 
-  const levelInfo = getLevelInfo(progress.currentLevel);
+  const levelInfo = progress.levelInfo;
   const nextLevelInfo = getLevelInfo(progress.currentLevel + 1);
-  const xpForCurrentLevel = LEVEL_DATA[progress.currentLevel].xpRequired;
-  const xpForNextLevel = LEVEL_DATA[progress.currentLevel + 1]?.xpRequired ?? progress.totalXp;
-  const xpInCurrentLevel = progress.totalXp - xpForCurrentLevel;
-  const xpNeededForLevel = xpForNextLevel - xpForCurrentLevel;
-  const progressPercent = (xpInCurrentLevel / xpNeededForLevel) * 100;
+  const xpInCurrentLevel = progress.totalXp - progress.progress.currentLevelXp;
+  const xpNeededForLevel = progress.progress.nextLevelXp - progress.progress.currentLevelXp;
+  const progressPercent = progress.progress.progress * 100;
 
   const earnedBadgeIds = new Set(userBadges.map((ub) => ub.badgeId));
 

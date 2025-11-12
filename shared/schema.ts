@@ -335,4 +335,16 @@ export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
 export interface GamificationProgress {
   currentLevel: number;
   totalXp: number;
+  levelInfo: {
+    level: number;
+    symbol: string;
+    label: string;
+    tagline: string;
+    xpRequired: number;
+  };
+  progress: {
+    currentLevelXp: number;
+    nextLevelXp: number;
+    progress: number;
+  };
 }
