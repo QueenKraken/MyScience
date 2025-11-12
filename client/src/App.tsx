@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,6 +7,8 @@ import { useAuth } from "@/hooks/useAuth";
 import HomePage from "@/pages/home";
 import Landing from "@/pages/landing";
 import ProfilePage from "@/pages/profile";
+import UserProfilePage from "@/pages/user-profile";
+import PeoplePage from "@/pages/people";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,11 +29,15 @@ function Router() {
         <>
           <Route path="/" component={Landing} />
           <Route path="/profile" component={Landing} />
+          <Route path="/profiles/:userId" component={Landing} />
+          <Route path="/people" component={Landing} />
         </>
       ) : (
         <>
           <Route path="/" component={HomePage} />
           <Route path="/profile" component={ProfilePage} />
+          <Route path="/profiles/:userId" component={UserProfilePage} />
+          <Route path="/people" component={PeoplePage} />
         </>
       )}
       <Route component={NotFound} />

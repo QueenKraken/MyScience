@@ -30,11 +30,27 @@ import {
 import { db } from "./db";
 import { eq, and, or, desc, isNull, count, sql } from "drizzle-orm";
 
+export type UserSummary = User & {
+  followersCount: number;
+  followingCount: number;
+  isFollowedByViewer?: boolean;
+};
+
+export type SearchUsersParams = {
+  searchTerm?: string;
+  subjectAreas?: string[];
+  limit?: number;
+  offset?: number;
+  excludeUserId?: string;
+};
+
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   updateUserProfile(id: string, updates: Partial<UpsertUser>): Promise<User | undefined>;
+  getUserSummary(userId: string, viewerId?: string): Promise<UserSummary | undefined>;
+  searchUsers(params: SearchUsersParams): Promise<User[]>;
   
   // Saved Articles methods
   getSavedArticles(userId: string): Promise<SavedArticle[]>;
@@ -146,6 +162,66 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  async getUserSummary(userId: string, viewerId?: string): Promise<UserSummary | undefined> {
+    const user = await this.getUser(userId);
+    if (!user) return undefined;
+
+    const stats = await this.getFollowStats(userId);
+    const isFollowedByViewer = viewerId 
+      ? await this.isFollowing(viewerId, userId)
+      : false;
+
+    return {
+      ...user,
+      followersCount: stats.followersCount,
+      followingCount: stats.followingCount,
+      isFollowedByViewer,
+    };
+  }
+
+  async searchUsers(params: SearchUsersParams): Promise<User[]> {
+    const { searchTerm, subjectAreas, limit = 20, offset = 0, excludeUserId } = params;
+    
+    let query = db.select().from(users);
+    
+    const conditions: any[] = [];
+    
+    if (searchTerm) {
+      const searchPattern = `%${searchTerm.toLowerCase()}%`;
+      conditions.push(
+        or(
+          sql`LOWER(${users.firstName}) LIKE ${searchPattern}`,
+          sql`LOWER(${users.lastName}) LIKE ${searchPattern}`,
+          sql`LOWER(${users.email}) LIKE ${searchPattern}`,
+          sql`LOWER(${users.bio}) LIKE ${searchPattern}`
+        )
+      );
+    }
+    
+    if (subjectAreas && subjectAreas.length > 0) {
+      // Use PostgreSQL array overlap operator (&&) with safe parameterization
+      // Each subject area is individually bound as a parameter, then assembled into an ARRAY
+      conditions.push(
+        sql`${users.subjectAreas} && ARRAY[${sql.join(subjectAreas.map(s => sql`${s}`), sql`, `)}]`
+      );
+    }
+    
+    if (excludeUserId) {
+      conditions.push(sql`${users.id} != ${excludeUserId}`);
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    const results = await query
+      .orderBy(users.firstName, users.lastName)
+      .limit(limit)
+      .offset(offset);
+    
+    return results;
   }
 
   // Saved Articles methods

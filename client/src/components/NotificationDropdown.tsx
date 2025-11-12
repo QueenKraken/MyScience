@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Bell, Check, CheckCheck } from "lucide-react";
@@ -19,6 +20,7 @@ export default function NotificationDropdown() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [, setLocation] = useLocation();
 
   // All hooks must be called unconditionally - use enabled flag to gate queries
   const { data: unreadCount } = useQuery<{ count: number }>({
@@ -28,7 +30,7 @@ export default function NotificationDropdown() {
     retry: false,
   });
 
-  const { data: notifications = [], isError: notificationsError } = useQuery<Notification[]>({
+  const { data: notifications = [], isError: notificationsError, isLoading: notificationsLoading } = useQuery<Notification[]>({
     queryKey: ['/api/notifications'],
     enabled: !!user && open,
     retry: false,
@@ -185,43 +187,59 @@ export default function NotificationDropdown() {
         </div>
 
         <ScrollArea className="h-[400px]">
-          {notifications.length === 0 ? (
+          {notificationsLoading ? (
+            <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+              <div className="w-12 h-12 mb-3 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+              <p className="text-sm">Loading notifications...</p>
+            </div>
+          ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
               <Bell className="w-12 h-12 mb-3 opacity-20" />
               <p className="text-sm">No notifications yet</p>
             </div>
           ) : (
             <div className="divide-y" role="list">
-              {notifications.map((notification) => (
-                <button
-                  key={notification.id}
-                  className={`w-full px-4 py-3 hover-elevate transition-colors text-left ${
-                    !notification.read ? 'bg-accent/10' : ''
-                  }`}
-                  onClick={() => !notification.read && markAsReadMutation.mutate(notification.id)}
-                  disabled={!!notification.read || markAsReadMutation.isPending}
-                  data-testid={`notification-item-${notification.id}`}
-                  role="listitem"
-                  aria-label={`${getNotificationText(notification)} ${notification.createdAt ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true }) : ''}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm">
-                        <span className="font-medium">User</span>{' '}
-                        <span className="text-muted-foreground">
-                          {getNotificationText(notification)}
-                        </span>
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {notification.createdAt && formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                      </p>
+              {notifications.map((notification) => {
+                const handleClick = () => {
+                  if (!notification.read) {
+                    markAsReadMutation.mutate(notification.id);
+                  }
+                  if (notification.actorId) {
+                    setLocation(`/profiles/${notification.actorId}`);
+                    setOpen(false);
+                  }
+                };
+
+                return (
+                  <button
+                    key={notification.id}
+                    className={`w-full px-4 py-3 hover-elevate transition-colors text-left ${
+                      !notification.read ? 'bg-accent/10' : ''
+                    }`}
+                    onClick={handleClick}
+                    data-testid={`notification-item-${notification.id}`}
+                    role="listitem"
+                    aria-label={`${getNotificationText(notification)} ${notification.createdAt ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true }) : ''}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm">
+                          <span className="font-medium">User</span>{' '}
+                          <span className="text-muted-foreground">
+                            {getNotificationText(notification)}
+                          </span>
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {notification.createdAt && formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                        </p>
+                      </div>
+                      {!notification.read && (
+                        <div className="w-2 h-2 rounded-full bg-primary mt-1.5" data-testid="indicator-unread" />
+                      )}
                     </div>
-                    {!notification.read && (
-                      <div className="w-2 h-2 rounded-full bg-primary mt-1.5" data-testid="indicator-unread" />
-                    )}
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
         </ScrollArea>

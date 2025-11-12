@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Moon, Sun, User, Home } from "lucide-react";
+import { ArrowLeft, Moon, Sun, User, Home, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import logoImage from "@assets/image_1762907544970.png";
@@ -74,6 +74,16 @@ export default function AppHeader({
               aria-label="Home"
             >
               <Home className="w-5 h-5" />
+            </Button>
+          </Link>
+          <Link href="/people">
+            <Button
+              variant="ghost"
+              size="icon"
+              data-testid="button-people"
+              aria-label="People"
+            >
+              <Users className="w-5 h-5" />
             </Button>
           </Link>
           <Link href="/profile">

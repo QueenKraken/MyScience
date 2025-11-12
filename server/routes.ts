@@ -51,6 +51,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User discovery and profile routes
+  app.get("/api/users", isAuthenticated, async (req: any, res) => {
+    try {
+      const viewerId = req.user.claims.sub;
+      const search = req.query.search as string | undefined;
+      const subjects = req.query.subjects as string | string[] | undefined;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const offset = parseInt(req.query.offset as string) || 0;
+      
+      const subjectAreas = subjects 
+        ? (Array.isArray(subjects) ? subjects : [subjects])
+        : undefined;
+      
+      const users = await storage.searchUsers({
+        searchTerm: search,
+        subjectAreas,
+        limit,
+        offset,
+        excludeUserId: viewerId,
+      });
+      
+      res.json(users);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      res.status(500).json({ error: "Failed to search users" });
+    }
+  });
+
+  app.get("/api/users/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const viewerId = req.user.claims.sub;
+      const { userId } = req.params;
+      
+      const userSummary = await storage.getUserSummary(userId, viewerId);
+      if (!userSummary) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      res.json(userSummary);
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ error: "Failed to fetch user profile" });
+    }
+  });
+
   // Saved Articles routes (protected)
   app.get("/api/saved-articles", isAuthenticated, async (req: any, res) => {
     try {
