@@ -1,0 +1,33 @@
+| Level Range | Symbol / Theme            | Label                   | Tagline                              | Example Unlock                  |
+| ----------- | ------------------------- | ----------------------- | ------------------------------------ | ------------------------------- |
+| 0           | 🧫 Petri Dish             | *Curious Newcomer*      | “Welcome to the lab.”                | Profile setup                   |
+| 1           | 🔬 Microscope             | *Observer*              | “Zoom in — discovery starts here.”   | Add first interest              |
+| 2           | 💧 Pipette                | *Experimenter*          | “You’re testing the waters.”         | Save or like your first article |
+| 3           | 🧪 Test Tube              | *Tinkerer*              | “Mixing ideas and insights.”         | Comment on a post               |
+| 4           | 🔥 Bunsen Burner          | *Initiator*             | “You’ve sparked your curiosity.”     | Create first discussion         |
+| 5           | ⚙️ Centrifuge             | *Active Researcher*     | “Getting results.”                   | Save 10 articles                |
+| 6           | 🧍‍♂️ Lab Coat            | *Recognised Researcher* | “Your presence is known.”            | Gain 5 followers                |
+| 7           | 🧭 Compass                | *Explorer*              | “New fields, new ideas.”             | Follow new topics               |
+| 8           | 💡 Lightbulb              | *Thinker*               | “Illuminating new directions.”       | Curate a list                   |
+| 9           | 📊 Data Graph             | *Analyst*               | “Your insights are growing.”         | Share a dataset                 |
+| 10          | 🧠 Brain                  | *Collaborator*          | “Connecting through knowledge.”      | Join a community                |
+| 11          | 🧰 Toolset                | *Innovator*             | “Building tools for others.”         | Link an external app            |
+| 12          | 🧩 DNA Strand             | *Contributor*           | “Adding your piece to the puzzle.”   | Publish your first paper        |
+| 13          | 📡 Antenna                | *Connector*             | “Others are tuning in.”              | Gain 10 followers               |
+| 14          | 🌌 Telescope              | *Visionary*             | “Your impact reaches farther.”       | Receive 5 citations             |
+| 15          | 🪐 Planet                 | *Influencer*            | “You orbit ideas that matter.”       | Host a webinar                  |
+| 16          | 🌍 Globe                  | *Community Builder*     | “Science without borders.”           | Collaborate in group projects   |
+| 17          | 🕸 Network                | *Integrator*            | “Bringing research together.”        | Curate a themed feed            |
+| 18          | 🔭 Observatory            | *Leader*                | “Guiding others through data.”       | Feature in spotlight            |
+| 19          | 💫 Supernova              | *Trailblazer*           | “Lighting up the field.”             | Paper cited widely              |
+| 20          | 🧬 Double Helix           | *Mentor*                | “Helping others grow.”               | Tag mentorship link             |
+| 21          | 🧱 Lab Building           | *Founder*               | “Creating spaces for science.”       | Lead a group                    |
+| 22          | ⚛️ Atom                   | *Influencer*            | “At the core of discovery.”          | 1000 engagements                |
+| 23          | 💥 Reaction Chamber       | *Pioneer*               | “Setting off new ideas.”             | Contribute to open review       |
+| 24          | 🧿 Lens                   | *Expert*                | “Bringing clarity.”                  | Moderate a discussion           |
+| 25          | 🌠 Shooting Star          | *Luminary*              | “Recognised for your brilliance.”    | 1000 followers                  |
+| 26          | 🪞 Prism                  | *Visionary Mentor*      | “Reflecting knowledge.”              | Mentor 3 researchers            |
+| 27          | 🌊 Waveform               | *Trendsetter*           | “Shaping the current.”               | Contribute to open-source       |
+| 28          | 🧙‍♂️ Philosopher’s Stone | *Sage*                  | “Wisdom through discovery.”          | 10 years of contributions       |
+| 29          | 🕊 Phoenix                | *Eternal Scholar*       | “Your research lives on.”            | Legacy milestone                |
+| 30          | ♾ Immortal Jellyfish      | *Timeless Innovator*    | “Endless curiosity, endless impact.” | Platform legend                 |
