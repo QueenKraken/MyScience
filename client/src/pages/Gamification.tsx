@@ -9,6 +9,8 @@ import type { Badge, UserBadge, GamificationProgress } from "@shared/schema";
 import { Trophy, Award, Zap, Star } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import AppHeader from "@/components/AppHeader";
+import { useState, useEffect } from "react";
+import confetti from "canvas-confetti";
 
 const tierIcons: Record<BadgeTier, typeof Trophy> = {
   Common: Zap,
@@ -27,6 +29,27 @@ const tierColors: Record<BadgeTier, string> = {
 export default function Gamification() {
   const { user } = useAuth();
   const userId = user?.id || null;
+  const [celebratedBadges, setCelebratedBadges] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!userId) {
+      setCelebratedBadges(new Set());
+      return;
+    }
+    const storedKey = `celebrated-badges-${userId}`;
+    const stored = localStorage.getItem(storedKey);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setCelebratedBadges(new Set(parsed));
+      } catch (e) {
+        console.error("Failed to parse celebrated badges", e);
+        setCelebratedBadges(new Set());
+      }
+    } else {
+      setCelebratedBadges(new Set());
+    }
+  }, [userId]);
 
   const { data: progress, isLoading: progressLoading } = useQuery<GamificationProgress>({
     queryKey: ["/api/gamification/progress", { userId }], // User-specific cache key
@@ -98,6 +121,44 @@ export default function Gamification() {
   const progressPercent = progress.progress.progress * 100;
 
   const earnedBadgeIds = new Set(userBadges.map((ub) => ub.badgeId));
+
+  const celebrateBadge = (badgeId: string, event: React.MouseEvent) => {
+    if (!userId || celebratedBadges.has(badgeId)) return;
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    
+    if (!prefersReducedMotion) {
+      const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+      const x = (rect.left + rect.width / 2) / window.innerWidth;
+      const y = (rect.top + rect.height / 2) / window.innerHeight;
+
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { x, y },
+        colors: ['#3b82f6', '#f472b6', '#10b981', '#fbbf24'],
+        disableForReducedMotion: true,
+      });
+
+      setTimeout(() => {
+        confetti({
+          particleCount: 50,
+          angle: 60,
+          spread: 55,
+          origin: { x, y },
+          colors: ['#8b5cf6', '#ec4899', '#14b8a6'],
+          disableForReducedMotion: true,
+        });
+      }, 200);
+    }
+
+    const newCelebrated = new Set(celebratedBadges);
+    newCelebrated.add(badgeId);
+    setCelebratedBadges(newCelebrated);
+    
+    const storedKey = `celebrated-badges-${userId}`;
+    localStorage.setItem(storedKey, JSON.stringify(Array.from(newCelebrated)));
+  };
 
   return (
     <>
@@ -192,6 +253,7 @@ export default function Gamification() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {badges.map((badge) => {
               const isEarned = earnedBadgeIds.has(badge.id);
+              const isCelebrated = celebratedBadges.has(badge.id);
               const TierIcon = tierIcons[badge.tier as BadgeTier];
               const tierColor = tierColors[badge.tier as BadgeTier];
               const userBadge = userBadges.find((ub) => ub.badgeId === badge.id);
@@ -200,10 +262,26 @@ export default function Gamification() {
                 <div
                   key={badge.id}
                   className={`rounded-lg border p-4 transition-all ${
-                    isEarned
-                      ? "bg-card hover-elevate"
+                    isEarned && !isCelebrated
+                      ? "bg-card hover-elevate cursor-pointer"
+                      : isEarned && isCelebrated
+                      ? "bg-card"
                       : "bg-muted/30 opacity-60"
                   }`}
+                  onClick={isEarned && !isCelebrated ? (e) => celebrateBadge(badge.id, e) : undefined}
+                  onKeyDown={
+                    isEarned && !isCelebrated
+                      ? (e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            celebrateBadge(badge.id, e as any);
+                          }
+                        }
+                      : undefined
+                  }
+                  tabIndex={isEarned && !isCelebrated ? 0 : undefined}
+                  role={isEarned && !isCelebrated ? "button" : undefined}
+                  aria-label={isEarned && !isCelebrated ? `Celebrate ${badge.name} badge` : undefined}
                   data-testid={`badge-card-${badge.trigger}`}
                 >
                   <div className="flex items-start gap-3">
@@ -240,6 +318,16 @@ export default function Gamification() {
                       {isEarned && userBadge && userBadge.earnedAt && (
                         <p className="text-xs text-muted-foreground mt-2" data-testid={`text-badge-earned-date-${badge.trigger}`}>
                           Earned {new Date(userBadge.earnedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                      {isEarned && !isCelebrated && (
+                        <p className="text-xs text-primary mt-2" data-testid={`text-badge-celebrate-hint-${badge.trigger}`}>
+                          Click to celebrate! 🎉
+                        </p>
+                      )}
+                      {isEarned && isCelebrated && (
+                        <p className="text-xs text-muted-foreground mt-2" data-testid={`text-badge-celebrated-${badge.trigger}`}>
+                          Celebrated ✓
                         </p>
                       )}
                     </div>

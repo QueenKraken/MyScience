@@ -79,7 +79,7 @@ export default function AppHeader({
             <img 
               src={logoImage} 
               alt="MyScience" 
-              className="h-10 w-auto dark:brightness-0 dark:invert"
+              className="h-10 w-auto dark:[mix-blend-mode:screen] dark:invert"
               data-testid="img-logo"
             />
           </div>
