@@ -221,6 +221,8 @@ export class DatabaseStorage implements IStorage {
     if (updates.scietyId !== undefined) updateData.scietyId = updates.scietyId;
     if (updates.bio !== undefined) updateData.bio = updates.bio;
     if (updates.subjectAreas !== undefined) updateData.subjectAreas = updates.subjectAreas as string[] | null;
+    if (updates.institution !== undefined) updateData.institution = updates.institution;
+    if (updates.contentPreferences !== undefined) updateData.contentPreferences = updates.contentPreferences as string[] | null;
     
     const [user] = await db
       .update(users)
@@ -383,6 +385,8 @@ export class DatabaseStorage implements IStorage {
         scietyId: users.scietyId,
         bio: users.bio,
         subjectAreas: users.subjectAreas,
+        institution: users.institution,
+        contentPreferences: users.contentPreferences,
         level: users.level,
         totalXp: users.totalXp,
         createdAt: users.createdAt,
@@ -406,6 +410,8 @@ export class DatabaseStorage implements IStorage {
         scietyId: users.scietyId,
         bio: users.bio,
         subjectAreas: users.subjectAreas,
+        institution: users.institution,
+        contentPreferences: users.contentPreferences,
         level: users.level,
         totalXp: users.totalXp,
         createdAt: users.createdAt,
@@ -576,6 +582,8 @@ export class DatabaseStorage implements IStorage {
         scietyId: users.scietyId,
         bio: users.bio,
         subjectAreas: users.subjectAreas,
+        institution: users.institution,
+        contentPreferences: users.contentPreferences,
         level: users.level,
         totalXp: users.totalXp,
         createdAt: users.createdAt,
@@ -629,6 +637,8 @@ export class DatabaseStorage implements IStorage {
         scietyId: users.scietyId,
         bio: users.bio,
         subjectAreas: users.subjectAreas,
+        institution: users.institution,
+        contentPreferences: users.contentPreferences,
         level: users.level,
         totalXp: users.totalXp,
         createdAt: users.createdAt,
