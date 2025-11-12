@@ -1,3 +1,4 @@
+import { Link } from "wouter";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -141,9 +142,11 @@ export default function ArticleCard({
     <Card className="p-6 hover-lift animate-fade-in shadow-sm" data-testid="card-article" style={{ boxShadow: 'var(--shadow-sm)' }}>
       <div className="space-y-5">
         <div>
-          <h3 className="font-heading text-xl font-semibold leading-relaxed mb-3" data-testid="text-article-title">
-            {title}
-          </h3>
+          <Link href={`/articles/${articleId}`} data-testid="link-article-detail">
+            <h3 className="font-heading text-xl font-semibold leading-relaxed mb-3 hover:text-primary transition-colors cursor-pointer" data-testid="text-article-title">
+              {title}
+            </h3>
+          </Link>
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span data-testid="text-authors" className="line-clamp-1">{authors.join(", ")}</span>
             <span>•</span>

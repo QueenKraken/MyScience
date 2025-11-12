@@ -12,6 +12,7 @@ import ProfilePage from "@/pages/profile";
 import UserProfilePage from "@/pages/user-profile";
 import PeoplePage from "@/pages/people";
 import Gamification from "@/pages/Gamification";
+import ArticleDetailPage from "@/pages/article-detail";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -58,6 +59,7 @@ function Router() {
           <Route path="/profiles/:userId" component={UserProfilePage} />
           <Route path="/people" component={PeoplePage} />
           <Route path="/gamification" component={Gamification} />
+          <Route path="/articles/:articleId" component={ArticleDetailPage} />
         </>
       )}
       <Route component={NotFound} />

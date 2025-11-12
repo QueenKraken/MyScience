@@ -214,6 +214,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/saved-articles/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const article = await storage.getSavedArticle(id);
+      
+      if (!article) {
+        return res.status(404).json({ error: "Article not found" });
+      }
+      
+      res.json(article);
+    } catch (error) {
+      console.error("Error fetching saved article:", error);
+      res.status(500).json({ error: "Failed to fetch saved article" });
+    }
+  });
+
   app.post("/api/saved-articles", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
