@@ -8,6 +8,13 @@ import {
   userMutes,
   userReports,
   notifications,
+  comments,
+  forumPosts,
+  forumPostLikes,
+  forumPostComments,
+  discussionSpaces,
+  discussionSpaceMembers,
+  discussionSpaceMessages,
   type User, 
   type UpsertUser,
   type SavedArticle,
@@ -25,7 +32,21 @@ import {
   type UserReport,
   type InsertUserReport,
   type Notification,
-  type InsertNotification
+  type InsertNotification,
+  type Comment,
+  type InsertComment,
+  type ForumPost,
+  type InsertForumPost,
+  type ForumPostLike,
+  type InsertForumPostLike,
+  type ForumPostComment,
+  type InsertForumPostComment,
+  type DiscussionSpace,
+  type InsertDiscussionSpace,
+  type DiscussionSpaceMember,
+  type InsertDiscussionSpaceMember,
+  type DiscussionSpaceMessage,
+  type InsertDiscussionSpaceMessage
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, isNull, count, sql } from "drizzle-orm";
@@ -102,6 +123,49 @@ export interface IStorage {
   markNotificationAsRead(notificationId: string): Promise<boolean>;
   markAllNotificationsAsRead(userId: string): Promise<boolean>;
   getUnreadCount(userId: string): Promise<number>;
+  
+  // Comment operations
+  createComment(comment: InsertComment & { userId: string }): Promise<Comment>;
+  getArticleComments(articleId: string): Promise<Comment[]>;
+  updateComment(commentId: string, content: string): Promise<Comment | undefined>;
+  deleteComment(commentId: string): Promise<boolean>;
+  getComment(commentId: string): Promise<Comment | undefined>;
+  
+  // Forum post operations
+  createForumPost(post: InsertForumPost & { userId: string }): Promise<ForumPost>;
+  getForumPosts(limit?: number, offset?: number): Promise<ForumPost[]>;
+  getUserForumPosts(userId: string): Promise<ForumPost[]>;
+  updateForumPost(postId: string, content: string): Promise<ForumPost | undefined>;
+  deleteForumPost(postId: string): Promise<boolean>;
+  likeForumPost(userId: string, postId: string): Promise<ForumPostLike>;
+  unlikeForumPost(userId: string, postId: string): Promise<boolean>;
+  hasLikedForumPost(userId: string, postId: string): Promise<boolean>;
+  getForumPostLikesCount(postId: string): Promise<number>;
+  
+  // Forum post comment operations
+  createForumPostComment(comment: InsertForumPostComment & { userId: string }): Promise<ForumPostComment>;
+  getForumPostComments(postId: string): Promise<ForumPostComment[]>;
+  updateForumPostComment(commentId: string, content: string): Promise<ForumPostComment | undefined>;
+  deleteForumPostComment(commentId: string): Promise<boolean>;
+  
+  // Discussion space operations
+  createDiscussionSpace(space: InsertDiscussionSpace & { creatorId: string }): Promise<DiscussionSpace>;
+  getDiscussionSpace(spaceId: string): Promise<DiscussionSpace | undefined>;
+  getUserDiscussionSpaces(userId: string): Promise<DiscussionSpace[]>;
+  updateDiscussionSpace(spaceId: string, updates: Partial<InsertDiscussionSpace>): Promise<DiscussionSpace | undefined>;
+  deleteDiscussionSpace(spaceId: string): Promise<boolean>;
+  
+  // Discussion space member operations
+  addDiscussionSpaceMember(member: InsertDiscussionSpaceMember): Promise<DiscussionSpaceMember>;
+  removeDiscussionSpaceMember(spaceId: string, userId: string): Promise<boolean>;
+  getDiscussionSpaceMembers(spaceId: string): Promise<DiscussionSpaceMember[]>;
+  isDiscussionSpaceMember(spaceId: string, userId: string): Promise<boolean>;
+  
+  // Discussion space message operations
+  createDiscussionSpaceMessage(message: InsertDiscussionSpaceMessage & { userId: string }): Promise<DiscussionSpaceMessage>;
+  getDiscussionSpaceMessages(spaceId: string, limit?: number): Promise<DiscussionSpaceMessage[]>;
+  updateDiscussionSpaceMessage(messageId: string, content: string): Promise<DiscussionSpaceMessage | undefined>;
+  deleteDiscussionSpaceMessage(messageId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -658,6 +722,354 @@ export class DatabaseStorage implements IStorage {
         isNull(notifications.read)
       ));
     return result?.count || 0;
+  }
+
+  // Comment operations
+  async createComment(commentData: InsertComment & { userId: string }): Promise<Comment> {
+    const [comment] = await db
+      .insert(comments)
+      .values({
+        articleId: commentData.articleId,
+        userId: commentData.userId,
+        parentCommentId: commentData.parentCommentId || null,
+        content: commentData.content,
+      })
+      .returning();
+    return comment;
+  }
+
+  async getArticleComments(articleId: string): Promise<Comment[]> {
+    const result = await db
+      .select()
+      .from(comments)
+      .where(and(
+        eq(comments.articleId, articleId),
+        isNull(comments.deletedAt)
+      ))
+      .orderBy(comments.createdAt);
+    return result;
+  }
+
+  async updateComment(commentId: string, content: string): Promise<Comment | undefined> {
+    const [comment] = await db
+      .update(comments)
+      .set({ 
+        content, 
+        editedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(comments.id, commentId))
+      .returning();
+    return comment;
+  }
+
+  async deleteComment(commentId: string): Promise<boolean> {
+    const result = await db
+      .update(comments)
+      .set({ deletedAt: new Date() })
+      .where(eq(comments.id, commentId));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getComment(commentId: string): Promise<Comment | undefined> {
+    const [comment] = await db
+      .select()
+      .from(comments)
+      .where(eq(comments.id, commentId));
+    return comment;
+  }
+
+  // Forum post operations
+  async createForumPost(postData: InsertForumPost & { userId: string }): Promise<ForumPost> {
+    const [post] = await db
+      .insert(forumPosts)
+      .values({
+        userId: postData.userId,
+        content: postData.content,
+        linkedArticleId: postData.linkedArticleId || null,
+      })
+      .returning();
+    return post;
+  }
+
+  async getForumPosts(limit: number = 50, offset: number = 0): Promise<ForumPost[]> {
+    const posts = await db
+      .select()
+      .from(forumPosts)
+      .where(isNull(forumPosts.deletedAt))
+      .orderBy(desc(forumPosts.createdAt))
+      .limit(limit)
+      .offset(offset);
+    return posts;
+  }
+
+  async getUserForumPosts(userId: string): Promise<ForumPost[]> {
+    const posts = await db
+      .select()
+      .from(forumPosts)
+      .where(and(
+        eq(forumPosts.userId, userId),
+        isNull(forumPosts.deletedAt)
+      ))
+      .orderBy(desc(forumPosts.createdAt));
+    return posts;
+  }
+
+  async updateForumPost(postId: string, content: string): Promise<ForumPost | undefined> {
+    const [post] = await db
+      .update(forumPosts)
+      .set({ 
+        content, 
+        editedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(forumPosts.id, postId))
+      .returning();
+    return post;
+  }
+
+  async deleteForumPost(postId: string): Promise<boolean> {
+    const result = await db
+      .update(forumPosts)
+      .set({ deletedAt: new Date() })
+      .where(eq(forumPosts.id, postId));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async likeForumPost(userId: string, postId: string): Promise<ForumPostLike> {
+    const [like] = await db
+      .insert(forumPostLikes)
+      .values({ userId, postId })
+      .returning();
+    return like;
+  }
+
+  async unlikeForumPost(userId: string, postId: string): Promise<boolean> {
+    const result = await db
+      .delete(forumPostLikes)
+      .where(and(
+        eq(forumPostLikes.userId, userId),
+        eq(forumPostLikes.postId, postId)
+      ));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async hasLikedForumPost(userId: string, postId: string): Promise<boolean> {
+    const [like] = await db
+      .select()
+      .from(forumPostLikes)
+      .where(and(
+        eq(forumPostLikes.userId, userId),
+        eq(forumPostLikes.postId, postId)
+      ));
+    return !!like;
+  }
+
+  async getForumPostLikesCount(postId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(forumPostLikes)
+      .where(eq(forumPostLikes.postId, postId));
+    return result?.count || 0;
+  }
+
+  // Forum post comment operations
+  async createForumPostComment(commentData: InsertForumPostComment & { userId: string }): Promise<ForumPostComment> {
+    const [comment] = await db
+      .insert(forumPostComments)
+      .values({
+        postId: commentData.postId,
+        userId: commentData.userId,
+        content: commentData.content,
+      })
+      .returning();
+    return comment;
+  }
+
+  async getForumPostComments(postId: string): Promise<ForumPostComment[]> {
+    const result = await db
+      .select()
+      .from(forumPostComments)
+      .where(and(
+        eq(forumPostComments.postId, postId),
+        isNull(forumPostComments.deletedAt)
+      ))
+      .orderBy(forumPostComments.createdAt);
+    return result;
+  }
+
+  async updateForumPostComment(commentId: string, content: string): Promise<ForumPostComment | undefined> {
+    const [comment] = await db
+      .update(forumPostComments)
+      .set({ 
+        content, 
+        editedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(forumPostComments.id, commentId))
+      .returning();
+    return comment;
+  }
+
+  async deleteForumPostComment(commentId: string): Promise<boolean> {
+    const result = await db
+      .update(forumPostComments)
+      .set({ deletedAt: new Date() })
+      .where(eq(forumPostComments.id, commentId));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Discussion space operations
+  async createDiscussionSpace(spaceData: InsertDiscussionSpace & { creatorId: string }): Promise<DiscussionSpace> {
+    const [space] = await db
+      .insert(discussionSpaces)
+      .values({
+        creatorId: spaceData.creatorId,
+        name: spaceData.name,
+        description: spaceData.description || null,
+        linkedArticleId: spaceData.linkedArticleId || null,
+        subjectArea: spaceData.subjectArea || null,
+        isPrivate: spaceData.isPrivate ?? 1,
+      })
+      .returning();
+    return space;
+  }
+
+  async getDiscussionSpace(spaceId: string): Promise<DiscussionSpace | undefined> {
+    const [space] = await db
+      .select()
+      .from(discussionSpaces)
+      .where(eq(discussionSpaces.id, spaceId));
+    return space;
+  }
+
+  async getUserDiscussionSpaces(userId: string): Promise<DiscussionSpace[]> {
+    const result = await db
+      .select({
+        id: discussionSpaces.id,
+        creatorId: discussionSpaces.creatorId,
+        name: discussionSpaces.name,
+        description: discussionSpaces.description,
+        linkedArticleId: discussionSpaces.linkedArticleId,
+        subjectArea: discussionSpaces.subjectArea,
+        isPrivate: discussionSpaces.isPrivate,
+        createdAt: discussionSpaces.createdAt,
+        updatedAt: discussionSpaces.updatedAt,
+      })
+      .from(discussionSpaceMembers)
+      .innerJoin(discussionSpaces, eq(discussionSpaceMembers.spaceId, discussionSpaces.id))
+      .where(eq(discussionSpaceMembers.userId, userId))
+      .orderBy(desc(discussionSpaces.updatedAt));
+    return result;
+  }
+
+  async updateDiscussionSpace(spaceId: string, updates: Partial<InsertDiscussionSpace>): Promise<DiscussionSpace | undefined> {
+    const [space] = await db
+      .update(discussionSpaces)
+      .set({ 
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(discussionSpaces.id, spaceId))
+      .returning();
+    return space;
+  }
+
+  async deleteDiscussionSpace(spaceId: string): Promise<boolean> {
+    const result = await db
+      .delete(discussionSpaces)
+      .where(eq(discussionSpaces.id, spaceId));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Discussion space member operations
+  async addDiscussionSpaceMember(memberData: InsertDiscussionSpaceMember): Promise<DiscussionSpaceMember> {
+    const [member] = await db
+      .insert(discussionSpaceMembers)
+      .values({
+        spaceId: memberData.spaceId,
+        userId: memberData.userId,
+        role: memberData.role || "member",
+      })
+      .returning();
+    return member;
+  }
+
+  async removeDiscussionSpaceMember(spaceId: string, userId: string): Promise<boolean> {
+    const result = await db
+      .delete(discussionSpaceMembers)
+      .where(and(
+        eq(discussionSpaceMembers.spaceId, spaceId),
+        eq(discussionSpaceMembers.userId, userId)
+      ));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getDiscussionSpaceMembers(spaceId: string): Promise<DiscussionSpaceMember[]> {
+    const members = await db
+      .select()
+      .from(discussionSpaceMembers)
+      .where(eq(discussionSpaceMembers.spaceId, spaceId))
+      .orderBy(discussionSpaceMembers.joinedAt);
+    return members;
+  }
+
+  async isDiscussionSpaceMember(spaceId: string, userId: string): Promise<boolean> {
+    const [member] = await db
+      .select()
+      .from(discussionSpaceMembers)
+      .where(and(
+        eq(discussionSpaceMembers.spaceId, spaceId),
+        eq(discussionSpaceMembers.userId, userId)
+      ));
+    return !!member;
+  }
+
+  // Discussion space message operations
+  async createDiscussionSpaceMessage(messageData: InsertDiscussionSpaceMessage & { userId: string }): Promise<DiscussionSpaceMessage> {
+    const [message] = await db
+      .insert(discussionSpaceMessages)
+      .values({
+        spaceId: messageData.spaceId,
+        userId: messageData.userId,
+        content: messageData.content,
+      })
+      .returning();
+    return message;
+  }
+
+  async getDiscussionSpaceMessages(spaceId: string, limit: number = 100): Promise<DiscussionSpaceMessage[]> {
+    const messages = await db
+      .select()
+      .from(discussionSpaceMessages)
+      .where(and(
+        eq(discussionSpaceMessages.spaceId, spaceId),
+        isNull(discussionSpaceMessages.deletedAt)
+      ))
+      .orderBy(discussionSpaceMessages.createdAt)
+      .limit(limit);
+    return messages;
+  }
+
+  async updateDiscussionSpaceMessage(messageId: string, content: string): Promise<DiscussionSpaceMessage | undefined> {
+    const [message] = await db
+      .update(discussionSpaceMessages)
+      .set({ 
+        content, 
+        editedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(discussionSpaceMessages.id, messageId))
+      .returning();
+    return message;
+  }
+
+  async deleteDiscussionSpaceMessage(messageId: string): Promise<boolean> {
+    const result = await db
+      .update(discussionSpaceMessages)
+      .set({ deletedAt: new Date() })
+      .where(eq(discussionSpaceMessages.id, messageId));
+    return result.rowCount ? result.rowCount > 0 : false;
   }
 }
 

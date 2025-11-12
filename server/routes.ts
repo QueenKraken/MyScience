@@ -12,11 +12,20 @@ import {
   insertUserBlockSchema,
   insertUserMuteSchema,
   insertUserReportSchema,
+  insertCommentSchema,
+  insertForumPostSchema,
+  insertForumPostLikeSchema,
+  insertForumPostCommentSchema,
+  insertDiscussionSpaceSchema,
+  insertDiscussionSpaceMemberSchema,
+  insertDiscussionSpaceMessageSchema,
   savedArticles,
   users,
   badges,
   userBadges,
-  articleLikes
+  articleLikes,
+  comments,
+  forumPosts
 } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
@@ -822,6 +831,447 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching activity feed:", error);
       res.status(500).json({ error: "Failed to fetch activity feed" });
+    }
+  });
+
+  // ===== Communication Features =====
+
+  // Comment routes (protected)
+  app.post("/api/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const commentData = insertCommentSchema.parse(req.body);
+      const comment = await storage.createComment({ ...commentData, userId });
+      res.status(201).json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid comment data", details: error.errors });
+      }
+      console.error("Error creating comment:", error);
+      res.status(500).json({ error: "Failed to create comment" });
+    }
+  });
+
+  app.get("/api/comments/:articleId", isAuthenticated, async (req: any, res) => {
+    try {
+      const { articleId } = req.params;
+      const comments = await storage.getArticleComments(articleId);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ error: "Failed to fetch comments" });
+    }
+  });
+
+  app.put("/api/comments/:commentId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { commentId } = req.params;
+      
+      // Validate content
+      const { content } = z.object({ content: z.string().min(1) }).parse(req.body);
+      
+      // Verify ownership
+      const existingComment = await storage.getComment(commentId);
+      if (!existingComment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+      if (existingComment.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized to edit this comment" });
+      }
+      
+      const comment = await storage.updateComment(commentId, content);
+      res.json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid content", details: error.errors });
+      }
+      console.error("Error updating comment:", error);
+      res.status(500).json({ error: "Failed to update comment" });
+    }
+  });
+
+  app.delete("/api/comments/:commentId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { commentId } = req.params;
+      
+      // Verify ownership
+      const existingComment = await storage.getComment(commentId);
+      if (!existingComment) {
+        return res.status(404).json({ error: "Comment not found" });
+      }
+      if (existingComment.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized to delete this comment" });
+      }
+      
+      await storage.deleteComment(commentId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ error: "Failed to delete comment" });
+    }
+  });
+
+  // Forum post routes (protected)
+  app.post("/api/forum-posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const postData = insertForumPostSchema.parse(req.body);
+      const post = await storage.createForumPost({ ...postData, userId });
+      res.status(201).json(post);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid post data", details: error.errors });
+      }
+      console.error("Error creating forum post:", error);
+      res.status(500).json({ error: "Failed to create forum post" });
+    }
+  });
+
+  app.get("/api/forum-posts", isAuthenticated, async (req: any, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const posts = await storage.getForumPosts(limit, offset);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching forum posts:", error);
+      res.status(500).json({ error: "Failed to fetch forum posts" });
+    }
+  });
+
+  app.get("/api/forum-posts/user/:userId", isAuthenticated, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+      const posts = await storage.getUserForumPosts(userId);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching user forum posts:", error);
+      res.status(500).json({ error: "Failed to fetch user forum posts" });
+    }
+  });
+
+  app.put("/api/forum-posts/:postId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { postId } = req.params;
+      
+      // Validate content
+      const { content } = z.object({ content: z.string().min(1) }).parse(req.body);
+      
+      // Verify ownership
+      const [existingPost] = await db.select().from(forumPosts).where(eq(forumPosts.id, postId));
+      if (!existingPost) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      if (existingPost.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized to edit this post" });
+      }
+      
+      const post = await storage.updateForumPost(postId, content);
+      res.json(post);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid content", details: error.errors });
+      }
+      console.error("Error updating forum post:", error);
+      res.status(500).json({ error: "Failed to update forum post" });
+    }
+  });
+
+  app.delete("/api/forum-posts/:postId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { postId } = req.params;
+      
+      // Verify ownership
+      const [existingPost] = await db.select().from(forumPosts).where(eq(forumPosts.id, postId));
+      if (!existingPost) {
+        return res.status(404).json({ error: "Post not found" });
+      }
+      if (existingPost.userId !== userId) {
+        return res.status(403).json({ error: "Not authorized to delete this post" });
+      }
+      
+      await storage.deleteForumPost(postId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting forum post:", error);
+      res.status(500).json({ error: "Failed to delete forum post" });
+    }
+  });
+
+  app.post("/api/forum-posts/:postId/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { postId } = req.params;
+      
+      const hasLiked = await storage.hasLikedForumPost(userId, postId);
+      if (hasLiked) {
+        return res.status(409).json({ error: "Already liked this post" });
+      }
+      
+      const like = await storage.likeForumPost(userId, postId);
+      res.status(201).json(like);
+    } catch (error) {
+      console.error("Error liking forum post:", error);
+      res.status(500).json({ error: "Failed to like forum post" });
+    }
+  });
+
+  app.delete("/api/forum-posts/:postId/like", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { postId } = req.params;
+      
+      const unliked = await storage.unlikeForumPost(userId, postId);
+      if (!unliked) {
+        return res.status(404).json({ error: "Like not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error unliking forum post:", error);
+      res.status(500).json({ error: "Failed to unlike forum post" });
+    }
+  });
+
+  app.get("/api/forum-posts/:postId/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const { postId } = req.params;
+      const comments = await storage.getForumPostComments(postId);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching forum post comments:", error);
+      res.status(500).json({ error: "Failed to fetch forum post comments" });
+    }
+  });
+
+  app.post("/api/forum-posts/:postId/comments", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { postId } = req.params;
+      
+      // Validate content
+      const { content } = z.object({ content: z.string().min(1) }).parse(req.body);
+      
+      const comment = await storage.createForumPostComment({ postId, content, userId });
+      res.status(201).json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid content", details: error.errors });
+      }
+      console.error("Error creating forum post comment:", error);
+      res.status(500).json({ error: "Failed to create forum post comment" });
+    }
+  });
+
+  // Discussion space routes (protected)
+  app.post("/api/discussion-spaces", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const spaceData = insertDiscussionSpaceSchema.parse(req.body);
+      
+      const space = await storage.createDiscussionSpace({ ...spaceData, creatorId: userId });
+      
+      // Automatically add creator as member with "creator" role
+      await storage.addDiscussionSpaceMember({
+        spaceId: space.id,
+        userId,
+        role: "creator"
+      });
+      
+      res.status(201).json(space);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid discussion space data", details: error.errors });
+      }
+      console.error("Error creating discussion space:", error);
+      res.status(500).json({ error: "Failed to create discussion space" });
+    }
+  });
+
+  app.get("/api/discussion-spaces", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const spaces = await storage.getUserDiscussionSpaces(userId);
+      res.json(spaces);
+    } catch (error) {
+      console.error("Error fetching discussion spaces:", error);
+      res.status(500).json({ error: "Failed to fetch discussion spaces" });
+    }
+  });
+
+  app.get("/api/discussion-spaces/:spaceId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spaceId } = req.params;
+      
+      // Verify membership
+      const isMember = await storage.isDiscussionSpaceMember(spaceId, userId);
+      if (!isMember) {
+        return res.status(403).json({ error: "Not a member of this discussion space" });
+      }
+      
+      const space = await storage.getDiscussionSpace(spaceId);
+      if (!space) {
+        return res.status(404).json({ error: "Discussion space not found" });
+      }
+      
+      res.json(space);
+    } catch (error) {
+      console.error("Error fetching discussion space:", error);
+      res.status(500).json({ error: "Failed to fetch discussion space" });
+    }
+  });
+
+  app.put("/api/discussion-spaces/:spaceId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spaceId } = req.params;
+      const updates = req.body;
+      
+      // Verify creator or moderator role
+      const space = await storage.getDiscussionSpace(spaceId);
+      if (!space) {
+        return res.status(404).json({ error: "Discussion space not found" });
+      }
+      if (space.creatorId !== userId) {
+        return res.status(403).json({ error: "Only the creator can update this space" });
+      }
+      
+      const updatedSpace = await storage.updateDiscussionSpace(spaceId, updates);
+      res.json(updatedSpace);
+    } catch (error) {
+      console.error("Error updating discussion space:", error);
+      res.status(500).json({ error: "Failed to update discussion space" });
+    }
+  });
+
+  app.delete("/api/discussion-spaces/:spaceId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spaceId } = req.params;
+      
+      // Verify creator role
+      const space = await storage.getDiscussionSpace(spaceId);
+      if (!space) {
+        return res.status(404).json({ error: "Discussion space not found" });
+      }
+      if (space.creatorId !== userId) {
+        return res.status(403).json({ error: "Only the creator can delete this space" });
+      }
+      
+      await storage.deleteDiscussionSpace(spaceId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting discussion space:", error);
+      res.status(500).json({ error: "Failed to delete discussion space" });
+    }
+  });
+
+  app.post("/api/discussion-spaces/:spaceId/members", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spaceId } = req.params;
+      const memberData = insertDiscussionSpaceMemberSchema.parse(req.body);
+      
+      // Verify creator or moderator role
+      const space = await storage.getDiscussionSpace(spaceId);
+      if (!space) {
+        return res.status(404).json({ error: "Discussion space not found" });
+      }
+      if (space.creatorId !== userId) {
+        return res.status(403).json({ error: "Only the creator can add members" });
+      }
+      
+      // Check if user is already a member
+      const isAlreadyMember = await storage.isDiscussionSpaceMember(spaceId, memberData.userId);
+      if (isAlreadyMember) {
+        return res.status(409).json({ error: "User is already a member of this space" });
+      }
+      
+      const member = await storage.addDiscussionSpaceMember({ ...memberData, spaceId });
+      res.status(201).json(member);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid member data", details: error.errors });
+      }
+      console.error("Error adding discussion space member:", error);
+      res.status(500).json({ error: "Failed to add discussion space member" });
+    }
+  });
+
+  app.delete("/api/discussion-spaces/:spaceId/members/:memberId", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spaceId, memberId } = req.params;
+      
+      // Verify creator role or self-removal
+      const space = await storage.getDiscussionSpace(spaceId);
+      if (!space) {
+        return res.status(404).json({ error: "Discussion space not found" });
+      }
+      
+      // Prevent creator from removing themselves
+      if (memberId === space.creatorId) {
+        return res.status(403).json({ error: "Creator cannot be removed from the space" });
+      }
+      
+      // Only creator or self can remove
+      if (space.creatorId !== userId && memberId !== userId) {
+        return res.status(403).json({ error: "Not authorized to remove this member" });
+      }
+      
+      await storage.removeDiscussionSpaceMember(spaceId, memberId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error removing discussion space member:", error);
+      res.status(500).json({ error: "Failed to remove discussion space member" });
+    }
+  });
+
+  app.get("/api/discussion-spaces/:spaceId/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spaceId } = req.params;
+      const limit = parseInt(req.query.limit as string) || 100;
+      
+      // Verify membership
+      const isMember = await storage.isDiscussionSpaceMember(spaceId, userId);
+      if (!isMember) {
+        return res.status(403).json({ error: "Not a member of this discussion space" });
+      }
+      
+      const messages = await storage.getDiscussionSpaceMessages(spaceId, limit);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching discussion space messages:", error);
+      res.status(500).json({ error: "Failed to fetch discussion space messages" });
+    }
+  });
+
+  app.post("/api/discussion-spaces/:spaceId/messages", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spaceId } = req.params;
+      const messageData = insertDiscussionSpaceMessageSchema.parse(req.body);
+      
+      // Verify membership
+      const isMember = await storage.isDiscussionSpaceMember(spaceId, userId);
+      if (!isMember) {
+        return res.status(403).json({ error: "Not a member of this discussion space" });
+      }
+      
+      const message = await storage.createDiscussionSpaceMessage({ ...messageData, spaceId, userId });
+      res.status(201).json(message);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid message data", details: error.errors });
+      }
+      console.error("Error creating discussion space message:", error);
+      res.status(500).json({ error: "Failed to create discussion space message" });
     }
   });
 
