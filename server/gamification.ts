@@ -1,7 +1,7 @@
 import { db } from "./db";
-import { users, badges, userBadges } from "@shared/schema";
+import { users, badges, userBadges, userActionCounts } from "@shared/schema";
 import { eq, and, sql } from "drizzle-orm";
-import { calculateLevel, type BadgeTrigger } from "@shared/gamification";
+import { calculateLevel, type BadgeTrigger, type GamificationActionType, XP_ACTION_DEFS } from "@shared/gamification";
 import { storage } from "./storage";
 
 export interface BadgeAward {
@@ -260,5 +260,151 @@ export async function getUserProgress(userId: string) {
     totalXp: user.totalXp,
     levelInfo,
     progress,
+  };
+}
+
+/**
+ * Record a gamified action and award XP/badges with daily cap enforcement
+ * This is the main entry point for connecting user actions to the gamification system
+ */
+export async function recordGamifiedAction(
+  userId: string,
+  actionType: GamificationActionType
+): Promise<GamificationUpdate> {
+  const actionDef = XP_ACTION_DEFS[actionType];
+  
+  if (!actionDef) {
+    throw new Error(`Unknown action type: ${actionType}`);
+  }
+
+  // Get today's date (YYYY-MM-DD format in UTC)
+  const today = new Date().toISOString().split('T')[0];
+
+  // Check/increment daily action count using UPSERT
+  const [actionCount] = await db
+    .insert(userActionCounts)
+    .values({
+      userId,
+      actionType,
+      date: today,
+      count: 1,
+    })
+    .onConflictDoUpdate({
+      target: [userActionCounts.userId, userActionCounts.actionType, userActionCounts.date],
+      set: {
+        count: sql`${userActionCounts.count} + 1`,
+        updatedAt: sql`now()`,
+      },
+    })
+    .returning();
+
+  // Check if user has exceeded daily cap
+  if (actionCount.count > actionDef.dailyCap) {
+    console.log(`User ${userId} exceeded daily cap for ${actionType} (${actionCount.count}/${actionDef.dailyCap})`);
+    
+    // Return current progress without awarding XP
+    const progress = await getUserProgress(userId);
+    return {
+      newBadges: [],
+      levelUp: null,
+      totalXp: progress.totalXp,
+      currentLevel: progress.currentLevel,
+    };
+  }
+
+  // Award XP and capture old level
+  const oldLevel = await addXpToUser(userId, actionDef.baseXp);
+  
+  console.log(`✓ Awarded ${actionDef.baseXp} XP to user ${userId} for ${actionType} (${actionCount.count}/${actionDef.dailyCap} today)`);
+
+  // Award badges if this action has an associated trigger
+  // Note: Badge awards themselves grant XP, which may cause additional level-ups
+  const newBadges: BadgeAward[] = [];
+  if (actionDef.badgeTrigger) {
+    const badgeAward = await awardBadgeByTrigger(userId, actionDef.badgeTrigger);
+    if (badgeAward) {
+      newBadges.push(badgeAward);
+    }
+  }
+
+  // Get updated user data AFTER all XP awards (base + badge XP)
+  const [userAfter] = await db
+    .select({
+      level: users.level,
+      totalXp: users.totalXp,
+    })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  if (!userAfter) {
+    throw new Error(`User not found after XP award: ${userId}`);
+  }
+
+  const newLevel = userAfter.level;
+  let levelUp: LevelUp | null = null;
+
+  // Check if user leveled up (from base XP or badge XP)
+  if (newLevel > oldLevel) {
+    const { getLevelInfo } = await import("@shared/gamification");
+    const levelInfo = getLevelInfo(newLevel);
+    
+    levelUp = {
+      oldLevel,
+      newLevel,
+      symbol: levelInfo.symbol,
+      label: levelInfo.label,
+      tagline: levelInfo.tagline,
+    };
+
+    console.log(`🎉 User ${userId} leveled up! ${oldLevel} → ${newLevel}`);
+
+    // Check if they reached level 30 (award Immortal badge)
+    if (newLevel === 30) {
+      const immortalBadge = await awardBadgeByTrigger(userId, "reach_level_30");
+      if (immortalBadge) {
+        newBadges.push(immortalBadge);
+        
+        // Re-query user after Immortal badge award (badge grants XP)
+        const [userFinal] = await db
+          .select({
+            level: users.level,
+            totalXp: users.totalXp,
+          })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        if (userFinal) {
+          // Check if Immortal badge XP caused another level-up
+          if (userFinal.level > newLevel) {
+            const finalLevelInfo = getLevelInfo(userFinal.level);
+            levelUp = {
+              oldLevel,
+              newLevel: userFinal.level,
+              symbol: finalLevelInfo.symbol,
+              label: finalLevelInfo.label,
+              tagline: finalLevelInfo.tagline,
+            };
+            console.log(`🎉 User ${userId} leveled up again from Immortal badge XP! ${newLevel} → ${userFinal.level}`);
+          }
+
+          // Return updated values including Immortal badge XP
+          return {
+            newBadges,
+            levelUp,
+            totalXp: userFinal.totalXp,
+            currentLevel: userFinal.level,
+          };
+        }
+      }
+    }
+  }
+
+  return {
+    newBadges,
+    levelUp,
+    totalXp: userAfter.totalXp,
+    currentLevel: userAfter.level,
   };
 }

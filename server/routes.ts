@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { getUserProgress, getAllBadges, getUserBadges, checkAndAwardBadges } from "./gamification";
+import { getUserProgress, getAllBadges, getUserBadges, checkAndAwardBadges, recordGamifiedAction } from "./gamification";
 import { 
   insertSavedArticleSchema, 
   updateUserProfileSchema,
@@ -239,12 +239,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Inject userId server-side for security
       const article = await storage.saveArticle({ ...articleData, userId });
       
-      // Award "First Save" badge (best-effort, doesn't block if it fails)
-      // TODO (Production): Move to post-commit queue once storage adds transactions
+      // Award XP and check for badges (best-effort, doesn't block if it fails)
       try {
-        await checkAndAwardBadges(userId, ["first_save"]);
-      } catch (badgeError) {
-        console.error("Error awarding first_save badge:", badgeError);
+        await recordGamifiedAction(userId, "save_article");
+      } catch (gamificationError) {
+        console.error("Error recording save_article gamification:", gamificationError);
       }
       
       res.status(201).json(article);
@@ -292,12 +291,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const follow = await storage.followUser(followerId, followingId);
       
-      // Check for "Connector" badge (5 follows) - service handles threshold check
-      // TODO (Production): Move to post-commit queue once storage adds transactions
+      // Award XP and check for badges (best-effort, doesn't block if it fails)
       try {
-        await checkAndAwardBadges(followerId, ["follow_5_users"]);
-      } catch (badgeError) {
-        console.error("Error awarding follow_5_users badge:", badgeError);
+        await recordGamifiedAction(followerId, "follow_user");
+      } catch (gamificationError) {
+        console.error("Error recording follow_user gamification:", gamificationError);
       }
       
       res.status(201).json(follow);
@@ -446,12 +444,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const like = await storage.likeArticle(userId, articleId, articleSource);
       
-      // Award "First Like" badge (best-effort, doesn't block if it fails)
-      // TODO (Production): Move to post-commit queue once storage adds transactions
+      // Award XP and check for badges (best-effort, doesn't block if it fails)
       try {
-        await checkAndAwardBadges(userId, ["first_like"]);
-      } catch (badgeError) {
-        console.error("Error awarding first_like badge:", badgeError);
+        await recordGamifiedAction(userId, "like_article");
+      } catch (gamificationError) {
+        console.error("Error recording like_article gamification:", gamificationError);
       }
       
       res.status(201).json(like);
@@ -936,6 +933,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       const postData = insertForumPostSchema.parse(req.body);
       const post = await storage.createForumPost({ ...postData, userId });
+      
+      // Award XP (best-effort, doesn't block if it fails)
+      try {
+        await recordGamifiedAction(userId, "create_forum_post");
+      } catch (gamificationError) {
+        console.error("Error recording create_forum_post gamification:", gamificationError);
+      }
+      
       res.status(201).json(post);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1032,6 +1037,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const like = await storage.likeForumPost(userId, postId);
+      
+      // Award XP (best-effort, doesn't block if it fails)
+      try {
+        await recordGamifiedAction(userId, "like_forum_post");
+      } catch (gamificationError) {
+        console.error("Error recording like_forum_post gamification:", gamificationError);
+      }
+      
       res.status(201).json(like);
     } catch (error) {
       console.error("Error liking forum post:", error);
@@ -1076,6 +1089,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { content } = z.object({ content: z.string().min(1) }).parse(req.body);
       
       const comment = await storage.createForumPostComment({ postId, content, userId });
+      
+      // Award XP (best-effort, doesn't block if it fails)
+      try {
+        await recordGamifiedAction(userId, "comment_forum_post");
+      } catch (gamificationError) {
+        console.error("Error recording comment_forum_post gamification:", gamificationError);
+      }
+      
       res.status(201).json(comment);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -1138,6 +1159,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         role: "creator"
       });
+      
+      // Award XP and check for badges (best-effort, doesn't block if it fails)
+      try {
+        await recordGamifiedAction(userId, "create_discussion_space");
+      } catch (gamificationError) {
+        console.error("Error recording create_discussion_space gamification:", gamificationError);
+      }
       
       res.status(201).json(space);
     } catch (error) {
@@ -1348,6 +1376,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const message = await storage.createDiscussionSpaceMessage({ content, spaceId, userId });
+      
+      // Award XP (best-effort, doesn't block if it fails)
+      try {
+        await recordGamifiedAction(userId, "send_message");
+      } catch (gamificationError) {
+        console.error("Error recording send_message gamification:", gamificationError);
+      }
+      
       res.status(201).json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {

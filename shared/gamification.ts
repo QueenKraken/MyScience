@@ -217,3 +217,68 @@ export const BADGE_DEFINITIONS: BadgeDefinition[] = [
     tier: "Legendary",
   },
 ];
+
+// XP Action System with Daily Caps
+export type GamificationActionType =
+  | "save_article"
+  | "like_article"
+  | "follow_user"
+  | "create_forum_post"
+  | "comment_forum_post"
+  | "like_forum_post"
+  | "send_message"
+  | "create_discussion_space";
+
+export interface XPActionDefinition {
+  baseXp: number;
+  dailyCap: number; // Maximum times this action can earn XP per day
+  badgeTrigger?: BadgeTrigger; // Badge to check after this action
+  description: string;
+}
+
+export const XP_ACTION_DEFS: Record<GamificationActionType, XPActionDefinition> = {
+  save_article: {
+    baseXp: 5,
+    dailyCap: 15, // 15 saves × 5 XP = 75 XP max per day
+    badgeTrigger: "first_save",
+    description: "Save an article to your library",
+  },
+  like_article: {
+    baseXp: 2,
+    dailyCap: 40, // 40 likes × 2 XP = 80 XP max per day
+    badgeTrigger: "first_like",
+    description: "Like an article",
+  },
+  follow_user: {
+    baseXp: 3,
+    dailyCap: 20, // 20 follows × 3 XP = 60 XP max per day
+    badgeTrigger: "follow_5_users",
+    description: "Follow a researcher",
+  },
+  create_forum_post: {
+    baseXp: 10,
+    dailyCap: 10, // 10 posts × 10 XP = 100 XP max per day
+    description: "Create a forum post",
+  },
+  comment_forum_post: {
+    baseXp: 5,
+    dailyCap: 25, // 25 comments × 5 XP = 125 XP max per day
+    description: "Comment on a forum post",
+  },
+  like_forum_post: {
+    baseXp: 2,
+    dailyCap: 40, // 40 likes × 2 XP = 80 XP max per day
+    description: "Like a forum post",
+  },
+  send_message: {
+    baseXp: 1,
+    dailyCap: 50, // 50 messages × 1 XP = 50 XP max per day
+    description: "Send a message in a discussion space",
+  },
+  create_discussion_space: {
+    baseXp: 25,
+    dailyCap: 5, // 5 spaces × 25 XP = 125 XP max per day
+    badgeTrigger: "create_discussion",
+    description: "Create a new discussion space",
+  },
+};

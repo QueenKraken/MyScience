@@ -7,7 +7,9 @@ import {
   jsonb,
   integer,
   index,
-  unique 
+  unique,
+  date,
+  primaryKey
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -206,6 +208,22 @@ export const userBadges = pgTable(
     index("IDX_user_badges_user").on(table.userId),
     index("IDX_user_badges_badge").on(table.badgeId),
     unique("UQ_user_badge_pair").on(table.userId, table.badgeId), // Prevent earning same badge twice
+  ]
+);
+
+// Gamification: Daily action counts for XP cap enforcement
+export const userActionCounts = pgTable(
+  "user_action_counts",
+  {
+    userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    actionType: text("action_type").notNull(), // e.g., "save_article", "like_article"
+    date: date("date", { mode: "string" }).notNull(), // Date of actions (YYYY-MM-DD for daily reset)
+    count: integer("count").notNull().default(0), // Number of times action performed today
+    updatedAt: timestamp("updated_at").defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.actionType, table.date] }),
+    index("IDX_user_action_counts_date").on(table.date), // For cleanup queries
   ]
 );
 
@@ -524,6 +542,10 @@ export type Badge = typeof badges.$inferSelect;
 export type InsertBadge = z.infer<typeof insertBadgeSchema>;
 export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+
+export const insertUserActionCountSchema = createInsertSchema(userActionCounts);
+export type UserActionCount = typeof userActionCounts.$inferSelect;
+export type InsertUserActionCount = z.infer<typeof insertUserActionCountSchema>;
 
 // Communication feature types
 export type Comment = typeof comments.$inferSelect;
