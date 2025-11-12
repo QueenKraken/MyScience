@@ -223,6 +223,7 @@ export const insertFollowSchema = createInsertSchema(follows).omit({
 export const insertAuthorFollowSchema = createInsertSchema(authorFollows).omit({
   id: true,
   userId: true, // Injected server-side
+  authorIdentifier: true, // Derived server-side from authorName + authorOrcid
   createdAt: true,
 });
 
