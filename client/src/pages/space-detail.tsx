@@ -15,6 +15,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { SpaceMemberList } from "@/components/SpaceMemberList";
 import { AddMemberDialog } from "@/components/AddMemberDialog";
+import AppHeader from "@/components/AppHeader";
 
 type DiscussionSpace = {
   id: string;
@@ -108,10 +109,13 @@ export default function SpaceDetailPage() {
 
   if (spaceLoading || !space) {
     return (
-      <div className="container max-w-6xl mx-auto p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/3" />
-          <div className="h-96 bg-muted rounded" />
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-6xl mx-auto p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-8 bg-muted rounded w-1/3" />
+            <div className="h-96 bg-muted rounded" />
+          </div>
         </div>
       </div>
     );
@@ -119,12 +123,15 @@ export default function SpaceDetailPage() {
 
   if (spaceError) {
     return (
-      <div className="container max-w-6xl mx-auto p-6">
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">Error loading space</CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-6xl mx-auto p-6">
+          <Card className="border-destructive">
+            <CardHeader>
+              <CardTitle className="text-destructive">Error loading space</CardTitle>
+            </CardHeader>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -132,9 +139,11 @@ export default function SpaceDetailPage() {
   const isEmpty = !messages || messages.length === 0;
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Header */}
-      <div className="border-b bg-card">
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div className="flex flex-col h-[calc(100vh-4rem)]">
+        {/* Space Header */}
+        <div className="border-b bg-card">
         <div className="container max-w-6xl mx-auto p-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <Link href="/spaces">
@@ -311,6 +320,7 @@ export default function SpaceDetailPage() {
           )}
         </div>
       </div>
+    </div>
     </div>
   );
 }

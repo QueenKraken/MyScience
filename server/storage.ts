@@ -163,7 +163,7 @@ export interface IStorage {
   isDiscussionSpaceMember(spaceId: string, userId: string): Promise<boolean>;
   
   // Discussion space message operations
-  createDiscussionSpaceMessage(message: InsertDiscussionSpaceMessage & { userId: string }): Promise<DiscussionSpaceMessage>;
+  createDiscussionSpaceMessage(message: { content: string; spaceId: string; userId: string }): Promise<DiscussionSpaceMessage>;
   getDiscussionSpaceMessages(spaceId: string, limit?: number): Promise<DiscussionSpaceMessage[]>;
   getDiscussionSpaceMessagesWithUsers(spaceId: string, limit?: number): Promise<any[]>;
   updateDiscussionSpaceMessage(messageId: string, content: string): Promise<DiscussionSpaceMessage | undefined>;
@@ -1127,7 +1127,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Discussion space message operations
-  async createDiscussionSpaceMessage(messageData: InsertDiscussionSpaceMessage & { userId: string }): Promise<DiscussionSpaceMessage> {
+  async createDiscussionSpaceMessage(messageData: { content: string; spaceId: string; userId: string }): Promise<DiscussionSpaceMessage> {
     const [message] = await db
       .insert(discussionSpaceMessages)
       .values({

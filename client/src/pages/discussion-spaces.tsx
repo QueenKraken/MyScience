@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreateSpaceDialog } from "@/components/CreateSpaceDialog";
 import { formatDistanceToNow } from "date-fns";
+import AppHeader from "@/components/AppHeader";
 
 type DiscussionSpace = {
   id: string;
@@ -28,15 +29,17 @@ export default function DiscussionSpacesPage() {
 
   if (isLoading) {
     return (
-      <div className="container max-w-6xl mx-auto p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Discussion Spaces</h1>
-            <p className="text-muted-foreground mt-1">
-              Private spaces for focused research discussions
-            </p>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-6xl mx-auto p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold">Discussion Spaces</h1>
+              <p className="text-muted-foreground mt-1">
+                Private spaces for focused research discussions
+              </p>
+            </div>
           </div>
-        </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i} className="animate-pulse">
@@ -50,14 +53,17 @@ export default function DiscussionSpacesPage() {
             </Card>
           ))}
         </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container max-w-6xl mx-auto p-6">
-        <Card className="border-destructive">
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        <div className="container max-w-6xl mx-auto p-6">
+          <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="text-destructive">Error loading spaces</CardTitle>
             <CardDescription>
@@ -65,6 +71,7 @@ export default function DiscussionSpacesPage() {
             </CardDescription>
           </CardHeader>
         </Card>
+        </div>
       </div>
     );
   }
@@ -72,7 +79,9 @@ export default function DiscussionSpacesPage() {
   const isEmpty = !spaces || spaces.length === 0;
 
   return (
-    <div className="container max-w-6xl mx-auto p-6">
+    <div className="min-h-screen bg-background">
+      <AppHeader />
+      <div className="container max-w-6xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold" data-testid="heading-spaces">
@@ -170,6 +179,7 @@ export default function DiscussionSpacesPage() {
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
       />
+      </div>
     </div>
   );
 }

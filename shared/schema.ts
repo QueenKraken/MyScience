@@ -487,6 +487,7 @@ export const insertDiscussionSpaceMemberSchema = createInsertSchema(discussionSp
 
 export const insertDiscussionSpaceMessageSchema = createInsertSchema(discussionSpaceMessages).omit({
   id: true,
+  spaceId: true, // Provided via URL parameter
   userId: true, // Injected server-side
   createdAt: true,
   updatedAt: true,

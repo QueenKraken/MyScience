@@ -1339,7 +1339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       const { spaceId } = req.params;
-      const messageData = insertDiscussionSpaceMessageSchema.parse(req.body);
+      const { content } = insertDiscussionSpaceMessageSchema.parse(req.body);
       
       // Verify membership
       const isMember = await storage.isDiscussionSpaceMember(spaceId, userId);
@@ -1347,7 +1347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Not a member of this discussion space" });
       }
       
-      const message = await storage.createDiscussionSpaceMessage({ ...messageData, spaceId, userId });
+      const message = await storage.createDiscussionSpaceMessage({ content, spaceId, userId });
       res.status(201).json(message);
     } catch (error) {
       if (error instanceof z.ZodError) {
