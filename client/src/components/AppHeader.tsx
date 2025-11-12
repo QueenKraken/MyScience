@@ -13,6 +13,7 @@ import NotificationDropdown from "@/components/NotificationDropdown";
 import { LevelBadge } from "@/components/LevelBadge";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface AppHeaderProps {
   returnUrl?: string;
@@ -26,6 +27,7 @@ export default function AppHeader({
   const [darkMode, setDarkMode] = useState(false);
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
@@ -94,52 +96,65 @@ export default function AppHeader({
               Return to {returnSiteName}
             </Button>
           )}
-          <Link href="/">
-            <Button
-              variant="ghost"
-              size="icon"
-              data-testid="button-home"
-              aria-label="Home"
+          
+          {isAuthenticated ? (
+            <>
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  data-testid="button-home"
+                  aria-label="Home"
+                >
+                  <Home className="w-5 h-5" />
+                </Button>
+              </Link>
+              <Link href="/people">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  data-testid="button-people"
+                  aria-label="People"
+                >
+                  <Users className="w-5 h-5" />
+                </Button>
+              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid="button-user-menu"
+                    aria-label="User menu"
+                  >
+                    <User className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" data-testid="dropdown-user-menu">
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" data-testid="link-profile-menu">
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <NotificationDropdown />
+              <LevelBadge />
+            </>
+          ) : (
+            <Button 
+              onClick={() => window.location.href = "/api/login"}
+              data-testid="button-login"
             >
-              <Home className="w-5 h-5" />
+              Sign In
             </Button>
-          </Link>
-          <Link href="/people">
-            <Button
-              variant="ghost"
-              size="icon"
-              data-testid="button-people"
-              aria-label="People"
-            >
-              <Users className="w-5 h-5" />
-            </Button>
-          </Link>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                data-testid="button-user-menu"
-                aria-label="User menu"
-              >
-                <User className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" data-testid="dropdown-user-menu">
-              <DropdownMenuItem asChild>
-                <Link href="/profile" data-testid="link-profile-menu">
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
-                <LogOut className="w-4 h-4 mr-2" />
-                Logout
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <NotificationDropdown />
-          <LevelBadge />
+          )}
+          
           <Button
             variant="ghost"
             size="icon"
