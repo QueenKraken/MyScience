@@ -122,7 +122,7 @@ export default function ProfilePage() {
   };
 
   // Check Bonfire account connection
-  const { data: bonfireAccount } = useQuery({
+  const { data: bonfireAccount, isLoading: isBonfireLoading, isError: isBonfireError } = useQuery({
     queryKey: ['/api/bonfire/account'],
     enabled: !!user,
   });
@@ -573,11 +573,20 @@ export default function ProfilePage() {
                     <div>
                       <p className="font-medium">Bonfire</p>
                       <p className="text-sm text-muted-foreground">
-                        {bonfireAccount ? "Connected" : "Not connected"}
+                        {isBonfireLoading 
+                          ? "Checking connection..." 
+                          : isBonfireError 
+                            ? "Connection status unavailable" 
+                            : bonfireAccount ? "Connected" : "Not connected"}
                       </p>
                     </div>
                   </div>
-                  {bonfireAccount ? (
+                  {isBonfireLoading ? (
+                    <Badge variant="secondary" className="gap-1">
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Loading
+                    </Badge>
+                  ) : bonfireAccount ? (
                     <Badge variant="default" className="gap-1" data-testid="badge-bonfire-connected">
                       <CheckCircle2 className="w-3 h-3" />
                       Connected
