@@ -3,6 +3,7 @@ import { ArrowLeft, Moon, Sun, User, Home } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import logoImage from "@assets/image_1762907544970.png";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 interface AppHeaderProps {
   returnUrl?: string;
@@ -85,6 +86,7 @@ export default function AppHeader({
               <User className="w-5 h-5" />
             </Button>
           </Link>
+          <NotificationDropdown />
           <Button
             variant="ghost"
             size="icon"
