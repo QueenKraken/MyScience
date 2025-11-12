@@ -20,7 +20,14 @@ export function useLevelUpDetection() {
   } | null>(null);
 
   const { data: progress } = useQuery<GamificationProgress>({
-    queryKey: ["/api/gamification/progress", userId], // User-specific cache
+    queryKey: ["/api/gamification/progress", { userId }], // User-specific cache key
+    queryFn: async () => {
+      const res = await fetch("/api/gamification/progress", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch progress");
+      return res.json();
+    },
     enabled: !!userId, // Only fetch if user is authenticated
   });
 

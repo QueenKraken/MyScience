@@ -28,17 +28,38 @@ export default function Gamification() {
   const userId = user?.id || null;
 
   const { data: progress, isLoading: progressLoading } = useQuery<GamificationProgress>({
-    queryKey: ["/api/gamification/progress", userId], // User-specific cache
+    queryKey: ["/api/gamification/progress", { userId }], // User-specific cache key
+    queryFn: async () => {
+      const res = await fetch("/api/gamification/progress", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch progress");
+      return res.json();
+    },
     enabled: !!userId, // Only fetch when authenticated
   });
 
   const { data: badges, isLoading: badgesLoading } = useQuery<Badge[]>({
     queryKey: ["/api/gamification/badges"],
+    queryFn: async () => {
+      const res = await fetch("/api/gamification/badges", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch badges");
+      return res.json();
+    },
     enabled: !!userId, // Only fetch when authenticated
   });
 
   const { data: userBadges, isLoading: userBadgesLoading } = useQuery<UserBadge[]>({
-    queryKey: ["/api/gamification/user-badges", userId], // User-specific cache
+    queryKey: ["/api/gamification/user-badges", { userId }], // User-specific cache key
+    queryFn: async () => {
+      const res = await fetch("/api/gamification/user-badges", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch user badges");
+      return res.json();
+    },
     enabled: !!userId, // Only fetch when authenticated
   });
 

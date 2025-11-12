@@ -15,7 +15,14 @@ export function LevelBadge({ showLabel = false, className = "" }: LevelBadgeProp
   const userId = user?.id || null;
 
   const { data: progress, isLoading } = useQuery<GamificationProgress>({
-    queryKey: ["/api/gamification/progress", userId], // User-specific cache to match useLevelUpDetection
+    queryKey: ["/api/gamification/progress", { userId }], // User-specific cache key
+    queryFn: async () => {
+      const res = await fetch("/api/gamification/progress", {
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Failed to fetch progress");
+      return res.json();
+    },
     enabled: !!userId, // Only fetch when authenticated
   });
 
