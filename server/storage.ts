@@ -159,11 +159,13 @@ export interface IStorage {
   addDiscussionSpaceMember(member: InsertDiscussionSpaceMember): Promise<DiscussionSpaceMember>;
   removeDiscussionSpaceMember(spaceId: string, userId: string): Promise<boolean>;
   getDiscussionSpaceMembers(spaceId: string): Promise<DiscussionSpaceMember[]>;
+  getDiscussionSpaceMembersWithUsers(spaceId: string): Promise<any[]>;
   isDiscussionSpaceMember(spaceId: string, userId: string): Promise<boolean>;
   
   // Discussion space message operations
   createDiscussionSpaceMessage(message: InsertDiscussionSpaceMessage & { userId: string }): Promise<DiscussionSpaceMessage>;
   getDiscussionSpaceMessages(spaceId: string, limit?: number): Promise<DiscussionSpaceMessage[]>;
+  getDiscussionSpaceMessagesWithUsers(spaceId: string, limit?: number): Promise<any[]>;
   updateDiscussionSpaceMessage(messageId: string, content: string): Promise<DiscussionSpaceMessage | undefined>;
   deleteDiscussionSpaceMessage(messageId: string): Promise<boolean>;
 }
@@ -1083,6 +1085,36 @@ export class DatabaseStorage implements IStorage {
     return members;
   }
 
+  async getDiscussionSpaceMembersWithUsers(spaceId: string) {
+    const members = await db
+      .select()
+      .from(discussionSpaceMembers)
+      .where(eq(discussionSpaceMembers.spaceId, spaceId))
+      .orderBy(discussionSpaceMembers.joinedAt);
+
+    const enrichedMembers = await Promise.all(
+      members.map(async (member) => {
+        const [user] = await db
+          .select({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            profileImageUrl: users.profileImageUrl,
+          })
+          .from(users)
+          .where(eq(users.id, member.userId));
+
+        return {
+          ...member,
+          user: user || null,
+        };
+      })
+    );
+
+    return enrichedMembers;
+  }
+
   async isDiscussionSpaceMember(spaceId: string, userId: string): Promise<boolean> {
     const [member] = await db
       .select()
@@ -1118,6 +1150,40 @@ export class DatabaseStorage implements IStorage {
       .orderBy(discussionSpaceMessages.createdAt)
       .limit(limit);
     return messages;
+  }
+
+  async getDiscussionSpaceMessagesWithUsers(spaceId: string, limit: number = 100) {
+    const messages = await db
+      .select()
+      .from(discussionSpaceMessages)
+      .where(and(
+        eq(discussionSpaceMessages.spaceId, spaceId),
+        isNull(discussionSpaceMessages.deletedAt)
+      ))
+      .orderBy(discussionSpaceMessages.createdAt)
+      .limit(limit);
+
+    const enrichedMessages = await Promise.all(
+      messages.map(async (message) => {
+        const [user] = await db
+          .select({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            profileImageUrl: users.profileImageUrl,
+          })
+          .from(users)
+          .where(eq(users.id, message.userId));
+
+        return {
+          ...message,
+          user: user || null,
+        };
+      })
+    );
+
+    return enrichedMessages;
   }
 
   async updateDiscussionSpaceMessage(messageId: string, content: string): Promise<DiscussionSpaceMessage | undefined> {

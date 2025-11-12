@@ -1190,6 +1190,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/discussion-spaces/:spaceId/members", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { spaceId } = req.params;
+      
+      // Verify membership or creator status
+      const space = await storage.getDiscussionSpace(spaceId);
+      if (!space) {
+        return res.status(404).json({ error: "Discussion space not found" });
+      }
+      
+      const isMember = await storage.isDiscussionSpaceMember(spaceId, userId);
+      const isCreator = space.creatorId === userId;
+      
+      if (!isMember && !isCreator) {
+        return res.status(403).json({ error: "Not a member of this discussion space" });
+      }
+      
+      const members = await storage.getDiscussionSpaceMembersWithUsers(spaceId);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching discussion space members:", error);
+      res.status(500).json({ error: "Failed to fetch discussion space members" });
+    }
+  });
+
   app.post("/api/discussion-spaces/:spaceId/members", isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -1263,7 +1289,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ error: "Not a member of this discussion space" });
       }
       
-      const messages = await storage.getDiscussionSpaceMessages(spaceId, limit);
+      const messages = await storage.getDiscussionSpaceMessagesWithUsers(spaceId, limit);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching discussion space messages:", error);

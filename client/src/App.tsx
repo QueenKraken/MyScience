@@ -14,6 +14,8 @@ import PeoplePage from "@/pages/people";
 import Gamification from "@/pages/Gamification";
 import ArticleDetailPage from "@/pages/article-detail";
 import BonfirePage from "@/pages/bonfire";
+import DiscussionSpacesPage from "@/pages/discussion-spaces";
+import SpaceDetailPage from "@/pages/space-detail";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -62,6 +64,8 @@ function Router() {
           <Route path="/gamification" component={Gamification} />
           <Route path="/articles/:articleId" component={ArticleDetailPage} />
           <Route path="/bonfire" component={BonfirePage} />
+          <Route path="/spaces" component={DiscussionSpacesPage} />
+          <Route path="/spaces/:spaceId" component={SpaceDetailPage} />
         </>
       )}
       <Route component={NotFound} />
