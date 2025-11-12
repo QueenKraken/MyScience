@@ -803,6 +803,75 @@ export class DatabaseStorage implements IStorage {
     return posts;
   }
 
+  async getForumPostsWithMeta(userId: string, limit: number = 50, offset: number = 0) {
+    const posts = await db
+      .select()
+      .from(forumPosts)
+      .where(isNull(forumPosts.deletedAt))
+      .orderBy(desc(forumPosts.createdAt))
+      .limit(limit)
+      .offset(offset);
+
+    const enrichedPosts = await Promise.all(
+      posts.map(async (post) => {
+        const [postUser] = await db
+          .select({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            profileImageUrl: users.profileImageUrl,
+          })
+          .from(users)
+          .where(eq(users.id, post.userId));
+
+        const [likesData] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(forumPostLikes)
+          .where(eq(forumPostLikes.postId, post.id));
+
+        const [userLike] = await db
+          .select()
+          .from(forumPostLikes)
+          .where(and(
+            eq(forumPostLikes.postId, post.id),
+            eq(forumPostLikes.userId, userId)
+          ));
+
+        const [commentsData] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(forumPostComments)
+          .where(and(
+            eq(forumPostComments.postId, post.id),
+            isNull(forumPostComments.deletedAt)
+          ));
+
+        let linkedArticle = null;
+        if (post.linkedArticleId) {
+          const [article] = await db
+            .select({
+              id: savedArticles.id,
+              title: savedArticles.title,
+            })
+            .from(savedArticles)
+            .where(eq(savedArticles.id, post.linkedArticleId));
+          linkedArticle = article || null;
+        }
+
+        return {
+          ...post,
+          user: postUser || null,
+          likesCount: likesData?.count || 0,
+          isLiked: !!userLike,
+          commentsCount: commentsData?.count || 0,
+          linkedArticle,
+        };
+      })
+    );
+
+    return enrichedPosts;
+  }
+
   async getUserForumPosts(userId: string): Promise<ForumPost[]> {
     const posts = await db
       .select()

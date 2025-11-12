@@ -45,6 +45,13 @@ The project comprises a **Browser Extension** (Manifest V3) for injecting MyScie
     *   **Visual Hierarchy**: Vertical separator between navigation and user controls, consistent gaps for better breathing room
     *   **Adaptive Header**: Shows different navigation for authenticated vs unauthenticated users
     *   **Logout System**: User menu dropdown with Profile and Logout options, session destruction on logout
+*   **Bonfire Forum System**:
+    *   **Forum Feed**: `/bonfire` page displays public posts with create, like, edit, delete functionality
+    *   **Post Creation**: Textarea form with user avatar, linked articles support
+    *   **Post Cards**: Display author info, content, timestamps, like counts, comment counts, edit/delete for own posts
+    *   **Navigation**: Flame icon in AppHeader for quick access
+    *   **API Endpoint**: GET `/api/forum-posts` returns enriched posts via `getForumPostsWithMeta` storage method
+    *   **Performance Note**: Current implementation uses N+1 queries acceptable for MVP traffic (<100 posts). Future optimization with JOIN-based aggregation or counter-caching recommended when load exceeds 5k daily reads or latency >300ms
 
 ## External Dependencies
 *   **Authentication Providers**: Google, GitHub (via Replit Auth OIDC)

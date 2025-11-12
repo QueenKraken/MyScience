@@ -25,11 +25,12 @@ import {
   userBadges,
   articleLikes,
   comments,
-  forumPosts
+  forumPosts,
+  forumPostComments
 } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
-import { eq, desc, sql, inArray } from "drizzle-orm";
+import { eq, desc, sql, inArray, and, isNull } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware (Replit Auth integration)
@@ -947,10 +948,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/forum-posts", isAuthenticated, async (req: any, res) => {
     try {
+      const userId = req.user.claims.sub;
       const limit = parseInt(req.query.limit as string) || 50;
       const offset = parseInt(req.query.offset as string) || 0;
-      const posts = await storage.getForumPosts(limit, offset);
-      res.json(posts);
+      
+      const enrichedPosts = await storage.getForumPostsWithMeta(userId, limit, offset);
+      res.json(enrichedPosts);
     } catch (error) {
       console.error("Error fetching forum posts:", error);
       res.status(500).json({ error: "Failed to fetch forum posts" });

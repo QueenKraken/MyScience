@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Moon, Sun, User, Home, Users, LogOut } from "lucide-react";
+import { ArrowLeft, Moon, Sun, User, Home, Users, LogOut, Flame } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import logoImage from "@assets/image_1762907544970.png";
@@ -108,6 +108,16 @@ export default function AppHeader({
                     aria-label="Home"
                   >
                     <Home className="w-5 h-5" />
+                  </Button>
+                </Link>
+                <Link href="/bonfire">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid="button-bonfire"
+                    aria-label="Bonfire"
+                  >
+                    <Flame className="w-5 h-5" />
                   </Button>
                 </Link>
                 <Link href="/people">

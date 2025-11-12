@@ -13,6 +13,7 @@ import UserProfilePage from "@/pages/user-profile";
 import PeoplePage from "@/pages/people";
 import Gamification from "@/pages/Gamification";
 import ArticleDetailPage from "@/pages/article-detail";
+import BonfirePage from "@/pages/bonfire";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -60,6 +61,7 @@ function Router() {
           <Route path="/people" component={PeoplePage} />
           <Route path="/gamification" component={Gamification} />
           <Route path="/articles/:articleId" component={ArticleDetailPage} />
+          <Route path="/bonfire" component={BonfirePage} />
         </>
       )}
       <Route component={NotFound} />
