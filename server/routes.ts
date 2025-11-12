@@ -32,6 +32,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post('/api/auth/logout', async (req: any, res) => {
+    // Handle unauthenticated requests gracefully
+    if (!req.logout || !req.session) {
+      res.clearCookie('connect.sid');
+      return res.json({ success: true });
+    }
+
     req.logout((err: any) => {
       if (err) {
         console.error("Error during logout:", err);
