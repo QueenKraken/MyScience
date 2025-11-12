@@ -700,16 +700,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let socialLikes: any[] = [];
       
       if (followedUserIds.length > 0) {
-        [socialSaves, socialLikes] = await Promise.all([
+        // Process each followed user's activities separately to avoid array issues
+        const socialSavesPromises = followedUserIds.map(id =>
           db.select({
             article: savedArticles,
             user: users,
           })
           .from(savedArticles)
           .innerJoin(users, eq(users.id, savedArticles.userId))
-          .where(inArray(savedArticles.userId, followedUserIds))
+          .where(eq(savedArticles.userId, id))
           .orderBy(desc(savedArticles.savedAt))
-          .limit(10),
+          .limit(10)
+        );
+        
+        const socialLikesPromises = followedUserIds.map(id =>
           db.select({
             like: articleLikes,
             user: users,
@@ -718,10 +722,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .from(articleLikes)
           .innerJoin(users, eq(users.id, articleLikes.userId))
           .leftJoin(savedArticles, eq(savedArticles.id, articleLikes.articleId))
-          .where(inArray(articleLikes.userId, followedUserIds))
+          .where(eq(articleLikes.userId, id))
           .orderBy(desc(articleLikes.createdAt))
-          .limit(10),
+          .limit(10)
+        );
+        
+        const [savesResults, likesResults] = await Promise.all([
+          Promise.all(socialSavesPromises),
+          Promise.all(socialLikesPromises),
         ]);
+        
+        // Flatten the results
+        socialSaves = savesResults.flat();
+        socialLikes = likesResults.flat();
       }
       
       // Aggregate all activities with timestamps
