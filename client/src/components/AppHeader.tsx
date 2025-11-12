@@ -1,10 +1,18 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Moon, Sun, User, Home, Users } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ArrowLeft, Moon, Sun, User, Home, Users, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import logoImage from "@assets/image_1762907544970.png";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { LevelBadge } from "@/components/LevelBadge";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface AppHeaderProps {
   returnUrl?: string;
@@ -16,6 +24,8 @@ export default function AppHeader({
   returnSiteName = "original site" 
 }: AppHeaderProps) {
   const [darkMode, setDarkMode] = useState(false);
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains("dark");
@@ -39,6 +49,23 @@ export default function AppHeader({
       window.open(returnUrl, '_blank');
     } else {
       console.log("Return to", returnSiteName);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await apiRequest("POST", "/api/auth/logout");
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out.",
+      });
+      window.location.href = "/";
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to logout. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -87,16 +114,30 @@ export default function AppHeader({
               <Users className="w-5 h-5" />
             </Button>
           </Link>
-          <Link href="/profile">
-            <Button
-              variant="ghost"
-              size="icon"
-              data-testid="button-profile"
-              aria-label="Profile"
-            >
-              <User className="w-5 h-5" />
-            </Button>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                data-testid="button-user-menu"
+                aria-label="User menu"
+              >
+                <User className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" data-testid="dropdown-user-menu">
+              <DropdownMenuItem asChild>
+                <Link href="/profile" data-testid="link-profile-menu">
+                  <User className="w-4 h-4 mr-2" />
+                  Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} data-testid="button-logout">
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <NotificationDropdown />
           <LevelBadge />
           <Button
