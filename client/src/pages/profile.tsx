@@ -19,6 +19,8 @@ import AppHeader from "@/components/AppHeader";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useQuery } from "@tanstack/react-query";
+import { BadgeShowcase } from "@/components/BadgeShowcase";
+import { XPProgress } from "@/components/XPProgress";
 
 type ProfileFormData = z.infer<typeof updateUserProfileSchema>;
 
@@ -171,7 +173,7 @@ export default function ProfilePage() {
     <div className="min-h-screen bg-background">
       <AppHeader />
       
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-7xl mx-auto px-6 py-12">
         <div className="mb-8">
           <h1 className="font-heading text-4xl font-bold mb-2" data-testid="heading-profile">
             Your Profile
@@ -181,8 +183,11 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+          {/* Profile Form - Left Column */}
+          <div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Profile Picture Section */}
             <Card>
               <CardHeader>
@@ -652,8 +657,16 @@ export default function ProfilePage() {
                 Save Profile
               </Button>
             </div>
-          </form>
-        </Form>
+              </form>
+            </Form>
+          </div>
+
+          {/* Gamification - Right Column */}
+          <div className="space-y-6">
+            <XPProgress />
+            <BadgeShowcase />
+          </div>
+        </div>
       </main>
     </div>
   );
