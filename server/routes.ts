@@ -125,6 +125,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bonfire account connection endpoint
+  app.get("/api/bonfire/account", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Check if user has a connected Bonfire account
+      // For MVP: Return null since OAuth integration isn't fully implemented
+      // TODO: When implemented, query bonfireAccounts table and decrypt tokens
+      res.json(null);
+    } catch (error) {
+      console.error("Error checking Bonfire account:", error);
+      res.status(500).json({ error: "Failed to check Bonfire connection" });
+    }
+  });
+
   // User discovery and profile routes
   app.get("/api/users", isAuthenticated, async (req: any, res) => {
     try {

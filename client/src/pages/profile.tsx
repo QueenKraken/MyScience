@@ -37,6 +37,7 @@ export default function ProfilePage() {
       bio: "",
       subjectAreas: [],
       institution: "",
+      jobRole: "",
       contentPreferences: [],
       profileImageUrl: "",
     },
@@ -53,6 +54,7 @@ export default function ProfilePage() {
         bio: user.bio || "",
         subjectAreas: user.subjectAreas || [],
         institution: user.institution || "",
+        jobRole: user.jobRole || "",
         contentPreferences: user.contentPreferences || [],
         profileImageUrl: user.profileImageUrl || "",
       });
@@ -115,6 +117,7 @@ export default function ProfilePage() {
         bio: user.bio || "",
         subjectAreas: user.subjectAreas || [],
         institution: user.institution || "",
+        jobRole: user.jobRole || "",
         contentPreferences: user.contentPreferences || [],
         profileImageUrl: user.profileImageUrl || "",
       });
@@ -316,27 +319,63 @@ export default function ProfilePage() {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                  control={form.control}
+                  name="jobRole"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Role</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="e.g., Postdoctoral Researcher, PhD Student, Principal Investigator"
+                          data-testid="input-job-role"
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Your current position or role in research
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </CardContent>
             </Card>
 
-            {/* Research Identity */}
+            {/* Research Identity - with Connected Accounts */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <LinkIcon className="w-5 h-5" />
-                  Research Identity
+                  Research Identity & Connected Accounts
                 </CardTitle>
                 <CardDescription>
-                  Connect your ORCID and Sciety accounts for personalized recommendations
+                  Connect your research identifiers for personalized recommendations
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
+                {/* ORCID iD with Connection Status */}
                 <FormField
                   control={form.control}
                   name="orcid"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>ORCID iD</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>ORCID iD</FormLabel>
+                        {field.value ? (
+                          <Badge variant="default" className="gap-1" data-testid="badge-orcid-connected">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Connected
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="gap-1" data-testid="badge-orcid-not-connected">
+                            <XCircle className="w-3 h-3" />
+                            Not connected
+                          </Badge>
+                        )}
+                      </div>
                       <FormControl>
                         <Input
                           {...field}
@@ -353,12 +392,26 @@ export default function ProfilePage() {
                   )}
                 />
                 
+                {/* Sciety ID with Connection Status */}
                 <FormField
                   control={form.control}
                   name="scietyId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Sciety ID</FormLabel>
+                      <div className="flex items-center justify-between">
+                        <FormLabel>Sciety ID</FormLabel>
+                        {field.value ? (
+                          <Badge variant="default" className="gap-1" data-testid="badge-sciety-connected">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Connected
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="gap-1" data-testid="badge-sciety-not-connected">
+                            <XCircle className="w-3 h-3" />
+                            Not connected
+                          </Badge>
+                        )}
+                      </div>
                       <FormControl>
                         <Input
                           {...field}
@@ -374,6 +427,57 @@ export default function ProfilePage() {
                     </FormItem>
                   )}
                 />
+
+                {/* Bonfire Connection */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Bonfire Account</FormLabel>
+                    {isBonfireLoading ? (
+                      <Badge variant="secondary" className="gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Checking...
+                      </Badge>
+                    ) : bonfireAccount ? (
+                      <Badge variant="default" className="gap-1" data-testid="badge-bonfire-connected">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Connected
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary" className="gap-1" data-testid="badge-bonfire-not-connected">
+                        <XCircle className="w-3 h-3" />
+                        Not connected
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {bonfireAccount ? (
+                    <div className="p-3 bg-muted/50 rounded-md">
+                      <p className="text-sm text-muted-foreground">
+                        Your Bonfire account is connected. This enables social features and collaboration.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full"
+                        data-testid="button-connect-bonfire"
+                        disabled
+                      >
+                        <LinkIcon className="w-4 h-4 mr-2" />
+                        Connect Bonfire Account (Coming Soon)
+                      </Button>
+                      <p className="text-sm text-muted-foreground">
+                        Bonfire integration is currently being developed. This will enable social collaboration features.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-sm text-muted-foreground pt-2 border-t">
+                  More integrations coming soon! We're working on connections to bioRxiv, eLife, and other research platforms.
+                </p>
               </CardContent>
             </Card>
 
@@ -523,85 +627,6 @@ export default function ProfilePage() {
                     </FormItem>
                   )}
                 />
-              </CardContent>
-            </Card>
-
-            {/* Connected Accounts */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <LinkIcon className="w-5 h-5" />
-                  Connected Accounts
-                </CardTitle>
-                <CardDescription>
-                  Manage your connections to external research platforms for enhanced recommendations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* ORCID Connection Status */}
-                <div className="flex items-center justify-between p-4 border rounded-md">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <LinkIcon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">ORCID iD</p>
-                      <p className="text-sm text-muted-foreground">
-                        {form.watch("orcid") ? form.watch("orcid") : "Not connected"}
-                      </p>
-                    </div>
-                  </div>
-                  {form.watch("orcid") ? (
-                    <Badge variant="default" className="gap-1" data-testid="badge-orcid-connected">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Connected
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="gap-1" data-testid="badge-orcid-not-connected">
-                      <XCircle className="w-3 h-3" />
-                      Not connected
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Bonfire Connection Status */}
-                <div className="flex items-center justify-between p-4 border rounded-md">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <LinkIcon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Bonfire</p>
-                      <p className="text-sm text-muted-foreground">
-                        {isBonfireLoading 
-                          ? "Checking connection..." 
-                          : isBonfireError 
-                            ? "Connection status unavailable" 
-                            : bonfireAccount ? "Connected" : "Not connected"}
-                      </p>
-                    </div>
-                  </div>
-                  {isBonfireLoading ? (
-                    <Badge variant="secondary" className="gap-1">
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      Loading
-                    </Badge>
-                  ) : bonfireAccount ? (
-                    <Badge variant="default" className="gap-1" data-testid="badge-bonfire-connected">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Connected
-                    </Badge>
-                  ) : (
-                    <Badge variant="secondary" className="gap-1" data-testid="badge-bonfire-not-connected">
-                      <XCircle className="w-3 h-3" />
-                      Not connected
-                    </Badge>
-                  )}
-                </div>
-
-                <p className="text-sm text-muted-foreground">
-                  More external integrations coming soon! We're working on connections to Sciety, bioRxiv, eLife, and other research platforms.
-                </p>
               </CardContent>
             </Card>
 

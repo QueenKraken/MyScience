@@ -15,6 +15,7 @@ import {
   discussionSpaces,
   discussionSpaceMembers,
   discussionSpaceMessages,
+  bonfireAccounts,
   type User, 
   type UpsertUser,
   type SavedArticle,
@@ -46,7 +47,8 @@ import {
   type DiscussionSpaceMember,
   type InsertDiscussionSpaceMember,
   type DiscussionSpaceMessage,
-  type InsertDiscussionSpaceMessage
+  type InsertDiscussionSpaceMessage,
+  type BonfireAccount
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, isNull, count, sql } from "drizzle-orm";
@@ -222,6 +224,7 @@ export class DatabaseStorage implements IStorage {
     if (updates.bio !== undefined) updateData.bio = updates.bio;
     if (updates.subjectAreas !== undefined) updateData.subjectAreas = updates.subjectAreas as string[] | null;
     if (updates.institution !== undefined) updateData.institution = updates.institution;
+    if (updates.jobRole !== undefined) updateData.jobRole = updates.jobRole;
     if (updates.contentPreferences !== undefined) updateData.contentPreferences = updates.contentPreferences as string[] | null;
     
     const [user] = await db
@@ -386,6 +389,7 @@ export class DatabaseStorage implements IStorage {
         bio: users.bio,
         subjectAreas: users.subjectAreas,
         institution: users.institution,
+        jobRole: users.jobRole,
         contentPreferences: users.contentPreferences,
         level: users.level,
         totalXp: users.totalXp,
@@ -411,6 +415,7 @@ export class DatabaseStorage implements IStorage {
         bio: users.bio,
         subjectAreas: users.subjectAreas,
         institution: users.institution,
+        jobRole: users.jobRole,
         contentPreferences: users.contentPreferences,
         level: users.level,
         totalXp: users.totalXp,
@@ -583,6 +588,7 @@ export class DatabaseStorage implements IStorage {
         bio: users.bio,
         subjectAreas: users.subjectAreas,
         institution: users.institution,
+        jobRole: users.jobRole,
         contentPreferences: users.contentPreferences,
         level: users.level,
         totalXp: users.totalXp,
@@ -638,6 +644,7 @@ export class DatabaseStorage implements IStorage {
         bio: users.bio,
         subjectAreas: users.subjectAreas,
         institution: users.institution,
+        jobRole: users.jobRole,
         contentPreferences: users.contentPreferences,
         level: users.level,
         totalXp: users.totalXp,
