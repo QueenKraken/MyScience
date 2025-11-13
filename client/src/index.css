@@ -10,52 +10,60 @@
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
   
-  /* MyScience Color System - Modern & Clean */
-  --background: 210 20% 98%;          /* #F9FAFB - Neutral off-white */
-  --foreground: 222 47% 11%;          /* #111827 - Rich near-black */
-  --border: 220 13% 91%;              /* Subtle border */
+  /* MyScience Color System - Warm & Easy on Eyes */
+  --background: 60 20% 98%;           /* #FAFAF8 - Warm cream (easier on eyes than white) */
+  --foreground: 0 0% 18%;             /* #2E2E2E - Softer than pure black */
+  --border: 60 8% 88%;                /* Subtle warm border */
   --card: 0 0% 100%;                  /* Pure white for cards */
-  --card-foreground: 222 47% 11%;     /* Same as foreground */
-  --card-border: 220 13% 94%;         /* Lighter card border */
+  --card-foreground: 0 0% 18%;        /* Same as foreground */
+  --card-border: 60 8% 92%;           /* Lighter card border */
   
   /* Sidebar colors */
-  --sidebar: 210 20% 97%;
-  --sidebar-foreground: 222 47% 11%;
-  --sidebar-border: 220 13% 92%;
-  --sidebar-primary: 213 100% 50%;    /* Primary blue */
+  --sidebar: 60 15% 96%;
+  --sidebar-foreground: 0 0% 18%;
+  --sidebar-border: 60 8% 90%;
+  --sidebar-primary: 185 25% 54%;     /* Teal accent */
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 213 20% 90%;
-  --sidebar-accent-foreground: 222 47% 11%;
-  --sidebar-ring: 213 100% 50%;
+  --sidebar-accent: 185 20% 92%;
+  --sidebar-accent-foreground: 0 0% 18%;
+  --sidebar-ring: 185 25% 54%;
   
   /* Popover */
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --popover-border: 220 13% 91%;
+  --popover-foreground: 0 0% 18%;
+  --popover-border: 60 8% 88%;
   
-  /* Primary - Electric Science Blue #0078FF */
-  --primary: 213 100% 50%;
+  /* Primary - Calming Teal (WCAG AA compliant at 4.5:1+) */
+  --primary: 185 55% 33%;
   --primary-foreground: 0 0% 100%;
   
-  /* Secondary - Coral Pink #FF4F81 (for engagement, likes, badges) */
-  --secondary: 345 100% 65%;
-  --secondary-foreground: 0 0% 100%;
+  /* Secondary - Muted for less visual noise */
+  --secondary: 60 10% 90%;
+  --secondary-foreground: 0 0% 18%;
   
   /* Muted states */
-  --muted: 210 16% 93%;
-  --muted-foreground: 215 14% 45%;
+  --muted: 60 10% 93%;
+  --muted-foreground: 0 0% 45%;
   
-  /* Accent - Bright Green #00E0A1 (for progress, success) */
-  --accent: 162 100% 44%;
+  /* Accent - Success Green (WCAG AA compliant - passes at 4.8:1) */
+  --accent: 122 47% 35%;
   --accent-foreground: 0 0% 100%;
   
-  /* Destructive - Error Red #E11D48 */
+  /* Destructive - Error Red */
   --destructive: 346 77% 50%;
   --destructive-foreground: 0 0% 100%;
   
+  /* Gamification Colors - WCAG AA compliant! */
+  --success: 122 47% 35%;             /* Green - verified 4.8:1 contrast */
+  --success-foreground: 0 0% 100%;
+  --warning: 36 100% 33%;             /* Orange - darkened to 4.5:1+ */
+  --warning-foreground: 0 0% 100%;
+  --epic: 291 64% 42%;                /* Purple - rare/legendary badges */
+  --epic-foreground: 0 0% 100%;
+  
   /* Input */
-  --input: 220 13% 80%;
-  --ring: 213 100% 50%;
+  --input: 60 8% 85%;
+  --ring: 185 25% 54%;                /* Match primary teal */
   
   /* Chart colors - using design system palette */
   --chart-1: 213 100% 50%;    /* Primary blue */
@@ -120,33 +128,41 @@
   --opaque-button-border-intensity: 9;
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
-  --background: 0 0% 8%;
-  --foreground: 0 0% 98%;
+  --background: 0 0% 6%;              /* #0F0F0F - Netflix-style rich black */
+  --foreground: 0 0% 91%;             /* #E8E8E8 - Soft white */
   --border: 0 0% 18%;
-  --card: 0 0% 10%;
-  --card-foreground: 0 0% 98%;
+  --card: 0 0% 10%;                   /* #1A1A1A - Elevated surfaces */
+  --card-foreground: 0 0% 91%;
   --card-border: 0 0% 14%;
-  --sidebar: 0 0% 12%;
-  --sidebar-foreground: 0 0% 98%;
+  --sidebar: 0 0% 8%;
+  --sidebar-foreground: 0 0% 91%;
   --sidebar-border: 0 0% 16%;
-  --sidebar-primary: 250 95% 65%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 250 15% 18%;
-  --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-ring: 250 95% 65%;
-  --popover: 0 0% 14%;
-  --popover-foreground: 0 0% 98%;
+  --sidebar-primary: 185 35% 64%;     /* Brighter teal for dark mode */
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 185 15% 18%;
+  --sidebar-accent-foreground: 0 0% 91%;
+  --sidebar-ring: 185 35% 64%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 91%;
   --popover-border: 0 0% 18%;
-  --primary: 250 95% 65%;
-  --primary-foreground: 0 0% 100%;
+  --primary: 185 35% 64%;             /* Brighter teal pops on dark */
+  --primary-foreground: 0 0% 0%;
   --secondary: 0 0% 16%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 6% 15%;
-  --muted-foreground: 240 4% 70%;
-  --accent: 280 25% 16%;
-  --accent-foreground: 280 60% 88%;
-  --destructive: 0 84% 42%;
+  --secondary-foreground: 0 0% 91%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 60%;
+  --accent: 122 45% 55%;              /* Brighter green for dark mode */
+  --accent-foreground: 0 0% 0%;
+  --destructive: 0 84% 50%;
   --destructive-foreground: 0 0% 98%;
+  
+  /* Gamification Colors - Dark Mode Optimized */
+  --success: 122 45% 55%;             /* Brighter green */
+  --success-foreground: 0 0% 0%;
+  --warning: 36 100% 65%;             /* Brighter orange */
+  --warning-foreground: 0 0% 0%;
+  --epic: 291 70% 60%;                /* Brighter purple */
+  --epic-foreground: 0 0% 0%;
   --input: 0 0% 30%;
   --ring: 250 95% 65%;
   --chart-1: 250 85% 70%;
