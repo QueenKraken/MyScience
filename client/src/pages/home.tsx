@@ -221,7 +221,21 @@ export default function HomePage() {
           userName={user?.firstName || undefined}
           savedCount={savedArticles.length}
           recommendationsCount={mockArticles.length}
+          featuredArticle={mockArticles[0] ? {
+            id: mockArticles[0].id,
+            title: mockArticles[0].title,
+            authors: mockArticles[0].authors,
+            journal: mockArticles[0].journal,
+            category: mockArticles[0].tags[0] || "Research",
+            externalUrl: mockArticles[0].externalUrl,
+          } : undefined}
           onViewSaved={() => setShowSavedOnly(true)}
+          onSaveFeatured={() => mockArticles[0] && handleSaveArticle(mockArticles[0])}
+          onReadFeatured={() => {
+            if (mockArticles[0]?.externalUrl) {
+              window.open(mockArticles[0].externalUrl, '_blank', 'noopener,noreferrer');
+            }
+          }}
         />
 
         <div className="max-w-7xl mx-auto px-6 pb-12">
