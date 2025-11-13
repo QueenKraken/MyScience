@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import AppHeader from "@/components/AppHeader";
 import HeroSection from "@/components/HeroSection";
 import ArticleCard from "@/components/ArticleCard";
+import { HorizontalCarousel } from "@/components/HorizontalCarousel";
 import EmptyState from "@/components/EmptyState";
 import { TopicsWidget, RecentActivityWidget } from "@/components/SidebarWidget";
 import { ResearcherProfileCard } from "@/components/ResearcherProfileCard";
@@ -157,6 +158,13 @@ export default function HomePage() {
     });
   };
 
+  // Handle entering saved-only mode: clear all filters
+  const handleViewSavedOnly = () => {
+    setShowSavedOnly(true);
+    setSelectedTopics([]); // Clear topic filters
+    setSearchQuery(""); // Clear search query
+  };
+
   // Combine saved articles with mock recommendations (todo: replace with real recommendations API)
   // Deduplicate: exclude mock articles that are already saved (match by title)
   const savedTitles = new Set(savedArticles.map(a => a.title));
@@ -229,7 +237,7 @@ export default function HomePage() {
             category: mockArticles[0].tags[0] || "Research",
             externalUrl: mockArticles[0].externalUrl,
           } : undefined}
-          onViewSaved={() => setShowSavedOnly(true)}
+          onViewSaved={handleViewSavedOnly}
           onSaveFeatured={() => mockArticles[0] && handleSaveArticle(mockArticles[0])}
           onReadFeatured={() => {
             if (mockArticles[0]?.externalUrl) {
@@ -254,20 +262,8 @@ export default function HomePage() {
             </div>
           ) : showContent ? (
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <div className="lg:col-span-3 space-y-6">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    type="search"
-                    placeholder="Search articles..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                    data-testid="input-search"
-                  />
-                </div>
-
-                {/* Saved Articles Filter Indicator */}
+              <div className="lg:col-span-3 space-y-12">
+                {/* Saved Articles Filter Banner */}
                 {showSavedOnly && (
                   <div className="flex items-center justify-between p-4 bg-primary/10 border border-primary/20 rounded-lg" data-testid="filter-saved-only-banner">
                     <div className="flex items-center gap-2">
@@ -285,58 +281,175 @@ export default function HomePage() {
                   </div>
                 )}
 
-                {/* For You Section - Spotify style */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-heading text-2xl font-bold" data-testid="heading-for-you">
-                      {showSavedOnly ? "Your Saved Articles" : "For You"}
-                    </h2>
-                    {selectedTopics.length > 0 && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedTopics([])}
-                        data-testid="button-clear-filters"
-                      >
-                        Clear filters
-                      </Button>
+                {/* Topic Filter Pills - Sticky filter bar */}
+                {!showSavedOnly && (
+                  <div className="sticky top-16 z-10 bg-background/95 backdrop-blur-sm py-4 -mx-6 px-6 border-b border-border/50">
+                    <div className="flex flex-wrap gap-2" data-testid="container-topic-filters">
+                      {mockTopics.map((topic) => (
+                        <Badge
+                          key={topic.name}
+                          variant={selectedTopics.includes(topic.name) ? "default" : "secondary"}
+                          className="cursor-pointer hover-elevate active-elevate-2 transition-all"
+                          onClick={() => toggleTopic(topic.name)}
+                          data-testid={`filter-topic-${topic.name.toLowerCase().replace(/\s+/g, '-')}`}
+                        >
+                          {topic.name}
+                        </Badge>
+                      ))}
+                      {selectedTopics.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedTopics([])}
+                          data-testid="button-clear-filters"
+                          className="ml-auto"
+                        >
+                          Clear filters
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Netflix-style Carousel Sections */}
+                {(showSavedOnly ? savedArticles.length > 0 : filteredArticles.length > 0) ? (
+                  <div className="space-y-10">
+                    {showSavedOnly ? (
+                      <HorizontalCarousel title="Your Saved Articles">
+                        {savedArticles.map((article) => (
+                          <ArticleCard
+                            key={article.id}
+                            articleId={article.id}
+                            title={article.title}
+                            authors={article.authors}
+                            journal={article.journal}
+                            date={article.publicationDate}
+                            abstract={article.abstract}
+                            tags={article.tags || []}
+                            externalUrl={article.externalUrl || undefined}
+                            isSaved={true}
+                            onSave={() => console.log("Already saved")}
+                            onView={() => console.log("View article:", article.title)}
+                          />
+                        ))}
+                      </HorizontalCarousel>
+                    ) : (
+                      <>
+                        {/* Continue Reading (Saved Articles) */}
+                        {savedArticles.length > 0 && (
+                          <HorizontalCarousel title="Continue Reading">
+                            {savedArticles
+                              .filter(article => {
+                                const matchesTopics = selectedTopics.length === 0 || 
+                                  (article.tags || []).some(tag => selectedTopics.includes(tag));
+                                return matchesTopics;
+                              })
+                              .map((article) => (
+                            <ArticleCard
+                              key={article.id}
+                              articleId={article.id}
+                              title={article.title}
+                              authors={article.authors}
+                              journal={article.journal}
+                              date={article.publicationDate}
+                              abstract={article.abstract}
+                              tags={article.tags || []}
+                              externalUrl={article.externalUrl || undefined}
+                              isSaved={true}
+                              onSave={() => console.log("Already saved")}
+                              onView={() => console.log("View article:", article.title)}
+                            />
+                          ))}
+                      </HorizontalCarousel>
                     )}
-                  </div>
 
-                  {/* Topic Filter Pills - Show all topics with visual distinction */}
-                  <div className="flex flex-wrap gap-2" data-testid="container-topic-filters">
-                    {mockTopics.map((topic) => (
-                      <Badge
-                        key={topic.name}
-                        variant={selectedTopics.includes(topic.name) ? "default" : "secondary"}
-                        className="cursor-pointer hover-elevate active-elevate-2 transition-all"
-                        onClick={() => toggleTopic(topic.name)}
-                        data-testid={`filter-topic-${topic.name.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        {topic.name}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
+                    {/* Trending in Your Field */}
+                    {uniqueMockArticles.length > 0 && (
+                      <HorizontalCarousel title="Trending in Your Field">
+                        {uniqueMockArticles
+                          .filter(article => {
+                            const matchesTopics = selectedTopics.length === 0 || 
+                              article.tags.some(tag => selectedTopics.includes(tag));
+                            return matchesTopics;
+                          })
+                          .map((article) => (
+                            <ArticleCard
+                              key={article.id}
+                              articleId={article.id}
+                              title={article.title}
+                              authors={article.authors}
+                              journal={article.journal}
+                              date={article.date}
+                              abstract={article.abstract}
+                              tags={article.tags}
+                              externalUrl={article.externalUrl}
+                              isSaved={false}
+                              onSave={() => handleSaveArticle(article)}
+                              onView={() => console.log("View article:", article.title)}
+                            />
+                          ))}
+                      </HorizontalCarousel>
+                    )}
 
-                {filteredArticles.length > 0 ? (
-                  <div className="space-y-6">
-                    {filteredArticles.map((article) => (
-                      <ArticleCard
-                        key={article.id}
-                        articleId={article.id}
-                        title={article.title}
-                        authors={article.authors}
-                        journal={article.journal}
-                        date={article.date}
-                        abstract={article.abstract}
-                        tags={article.tags}
-                        externalUrl={article.externalUrl}
-                        isSaved={article.isSaved}
-                        onSave={() => !article.isSaved && handleSaveArticle(article)}
-                        onView={() => console.log("View article:", article.title)}
-                      />
-                    ))}
+                    {/* New This Week (duplicate for demo - todo: replace with real data) */}
+                    {mockArticles.length > 0 && (
+                      <HorizontalCarousel title="New This Week">
+                        {mockArticles
+                          .filter(article => {
+                            const matchesTopics = selectedTopics.length === 0 || 
+                              article.tags.some(tag => selectedTopics.includes(tag));
+                            return matchesTopics;
+                          })
+                          .slice()
+                          .reverse()
+                          .map((article, idx) => (
+                            <ArticleCard
+                              key={`new-${article.id}-${idx}`}
+                              articleId={article.id}
+                              title={article.title}
+                              authors={article.authors}
+                              journal={article.journal}
+                              date={article.date}
+                              abstract={article.abstract}
+                              tags={article.tags}
+                              externalUrl={article.externalUrl}
+                              isSaved={savedTitles.has(article.title)}
+                              onSave={() => !savedTitles.has(article.title) && handleSaveArticle(article)}
+                              onView={() => console.log("View article:", article.title)}
+                            />
+                          ))}
+                      </HorizontalCarousel>
+                    )}
+
+                    {/* Recommended for You (duplicate for demo - todo: replace with real recommendations) */}
+                    {mockArticles.length > 1 && (
+                      <HorizontalCarousel title="Recommended for You">
+                        {mockArticles
+                          .filter(article => {
+                            const matchesTopics = selectedTopics.length === 0 || 
+                              article.tags.some(tag => selectedTopics.includes(tag));
+                            return matchesTopics;
+                          })
+                          .map((article, idx) => (
+                            <ArticleCard
+                              key={`rec-${article.id}-${idx}`}
+                              articleId={article.id}
+                              title={article.title}
+                              authors={article.authors}
+                              journal={article.journal}
+                              date={article.date}
+                              abstract={article.abstract}
+                              tags={article.tags}
+                              externalUrl={article.externalUrl}
+                              isSaved={savedTitles.has(article.title)}
+                              onSave={() => !savedTitles.has(article.title) && handleSaveArticle(article)}
+                              onView={() => console.log("View article:", article.title)}
+                            />
+                          ))}
+                      </HorizontalCarousel>
+                    )}
+                      </>
+                    )}
                   </div>
                 ) : (
                   <EmptyState
@@ -346,8 +459,6 @@ export default function HomePage() {
                         ? "Start saving articles you're interested in, and they'll appear here for easy access."
                         : selectedTopics.length > 0
                         ? `No articles match the selected topics. Try different filters.`
-                        : searchQuery
-                        ? `No articles match "${searchQuery}". Try a different search term.`
                         : "No articles available."
                     }
                   />
@@ -363,7 +474,7 @@ export default function HomePage() {
                   savedCount={savedArticles.length}
                   readThisWeek={savedArticles.length}
                   topTopics={mockTopics.slice(0, 3).map(t => t.name)}
-                  onViewSaved={() => setShowSavedOnly(true)}
+                  onViewSaved={handleViewSavedOnly}
                 />
                 <TopicsWidget 
                   topics={mockTopics}
