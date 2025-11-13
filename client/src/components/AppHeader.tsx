@@ -75,8 +75,8 @@ export default function AppHeader({
       <div className="flex items-center justify-between h-16 px-6 max-w-7xl mx-auto">
         <Link href="/">
           <div className="flex items-center gap-2 hover-elevate active-elevate-2 rounded-lg px-2 py-1 -ml-2 cursor-pointer" data-testid="link-logo">
-            <Sparkles className="h-8 w-8 text-primary" data-testid="icon-logo" />
-            <span className="text-xl font-semibold text-foreground" data-testid="text-logo">
+            <Sparkles className="h-6 w-6 md:h-8 md:w-8 text-primary" data-testid="icon-logo" />
+            <span className="text-lg md:text-xl font-semibold text-foreground" data-testid="text-logo">
               MyScience
             </span>
           </div>
