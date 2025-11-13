@@ -5,17 +5,13 @@ import { Loader2, Award } from "lucide-react";
 import type { BadgeTier } from "@shared/gamification";
 
 interface UserBadge {
-  id: number;
-  badgeId: number;
-  userId: string;
-  awardedAt: string;
-  badge: {
-    id: number;
-    name: string;
-    tier: BadgeTier;
-    points: number;
-    message: string;
-  };
+  id: string;
+  badgeId: string;
+  name: string;
+  tier: BadgeTier;
+  points: number;
+  message: string;
+  earnedAt: string;
 }
 
 interface BadgeShowcaseProps {
@@ -75,7 +71,7 @@ export function BadgeShowcase({ userId }: BadgeShowcaseProps) {
 
   const sortedBadges = [...(userBadges || [])].sort((a, b) => {
     const tierOrder = { Legendary: 0, Epic: 1, Rare: 2, Common: 3 };
-    return tierOrder[a.badge.tier] - tierOrder[b.badge.tier];
+    return tierOrder[a.tier] - tierOrder[b.tier];
   });
 
   return (
@@ -101,7 +97,7 @@ export function BadgeShowcase({ userId }: BadgeShowcaseProps) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" data-testid="grid-badges">
             {sortedBadges.map((userBadge) => {
-              const tier = userBadge.badge.tier;
+              const tier = userBadge.tier;
               const colors = tierColors[tier];
               
               return (
@@ -111,11 +107,11 @@ export function BadgeShowcase({ userId }: BadgeShowcaseProps) {
                     relative rounded-lg border p-4 transition-all hover-elevate
                     ${colors.bg} ${colors.border} ${colors.glow}
                   `}
-                  data-testid={`badge-item-${userBadge.badge.name.toLowerCase().replace(/\s+/g, "-")}`}
+                  data-testid={`badge-item-${userBadge.name.toLowerCase().replace(/\s+/g, "-")}`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <h4 className={`font-semibold text-sm ${colors.text}`}>
-                      {userBadge.badge.name}
+                      {userBadge.name}
                     </h4>
                     <Badge 
                       variant={tier === "Common" ? "secondary" : "outline"}
@@ -126,14 +122,14 @@ export function BadgeShowcase({ userId }: BadgeShowcaseProps) {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground mb-2">
-                    {userBadge.badge.message}
+                    {userBadge.message}
                   </p>
                   <div className="flex items-center justify-between text-xs">
                     <span className={`font-medium ${colors.text}`}>
-                      +{userBadge.badge.points} XP
+                      +{userBadge.points} XP
                     </span>
                     <span className="text-muted-foreground">
-                      {new Date(userBadge.awardedAt).toLocaleDateString()}
+                      {new Date(userBadge.earnedAt).toLocaleDateString()}
                     </span>
                   </div>
                 </div>
