@@ -5,10 +5,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ArrowLeft, Moon, Sun, User, Home, Users, LogOut, Flame, MessageSquare } from "lucide-react";
+import { ArrowLeft, Moon, Sun, User, Home, Users, LogOut, Flame, MessageSquare, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import logoImage from "@assets/image_1762907544970.png";
 import NotificationDropdown from "@/components/NotificationDropdown";
 import { LevelBadge } from "@/components/LevelBadge";
 import { apiRequest } from "@/lib/queryClient";
@@ -75,13 +74,11 @@ export default function AppHeader({
     <header className="sticky top-0 z-50 border-b bg-background" data-testid="header-main">
       <div className="flex items-center justify-between h-16 px-6 max-w-7xl mx-auto">
         <Link href="/">
-          <div className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-lg px-2 py-1 -ml-2 cursor-pointer" data-testid="link-logo">
-            <img 
-              src={logoImage} 
-              alt="MyScience" 
-              className="h-10 w-auto dark:[mix-blend-mode:screen] dark:invert"
-              data-testid="img-logo"
-            />
+          <div className="flex items-center gap-2 hover-elevate active-elevate-2 rounded-lg px-2 py-1 -ml-2 cursor-pointer" data-testid="link-logo">
+            <Sparkles className="h-8 w-8 text-primary" data-testid="icon-logo" />
+            <span className="text-xl font-semibold text-foreground" data-testid="text-logo">
+              MyScience
+            </span>
           </div>
         </Link>
 
