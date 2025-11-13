@@ -343,7 +343,8 @@ export default function HomePage() {
               <aside className="space-y-6">
                 <ResearcherProfileCard
                   userName={user?.firstName ?? null}
-                  userEmail={user?.email || undefined}
+                  jobRole={user?.jobRole || undefined}
+                  institution={user?.institution || undefined}
                   avatarUrl={user?.profileImageUrl || undefined}
                   savedCount={savedArticles.length}
                   readThisWeek={savedArticles.length}

@@ -7,7 +7,8 @@ import { Link } from "wouter";
 
 interface ResearcherProfileCardProps {
   userName: string | null;
-  userEmail?: string;
+  jobRole?: string;
+  institution?: string;
   avatarUrl?: string;
   savedCount: number;
   readThisWeek?: number;
@@ -17,7 +18,8 @@ interface ResearcherProfileCardProps {
 
 export function ResearcherProfileCard({
   userName,
-  userEmail,
+  jobRole,
+  institution,
   avatarUrl,
   savedCount,
   readThisWeek = 0,
@@ -49,12 +51,12 @@ export function ResearcherProfileCard({
             <h3 className="font-heading text-xl font-semibold mb-1 truncate" data-testid="text-user-name">
               {userName || "Welcome, Researcher"}
             </h3>
-            <p className="text-sm text-muted-foreground mb-2" data-testid="text-user-bio">
-              Early career researcher
+            <p className="text-sm text-muted-foreground mb-2" data-testid="text-user-job-role">
+              {jobRole || "Researcher"}
             </p>
-            {userEmail && (
-              <p className="text-xs text-muted-foreground truncate" data-testid="text-user-email">
-                {userEmail}
+            {institution && (
+              <p className="text-xs text-muted-foreground truncate" data-testid="text-user-institution">
+                {institution}
               </p>
             )}
           </div>
