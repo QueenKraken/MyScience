@@ -2,152 +2,176 @@
 
 ## Design Approach
 
-**Modern & Energetic with Academic Credibility**
-Drawing inspiration from content discovery platforms (Netflix, Spotify, Medium) adapted for early career researchers. Balancing vibrant, joyful design with professional academic standards.
+**Netflix for Science: Content-First Discovery**
+Primary inspiration from Netflix and Spotify's immersive, media-rich interfaces adapted for research discovery. Focus on visual impact, horizontal exploration, and smooth browsing experiences.
 
 **Core Principles:**
-- Fresh & Modern: Vibrant colors and contemporary design that energizes research discovery
-- Young Professional: Appeals to early career researchers with confidence and optimism
-- Content-forward: Design serves discovery, celebrates research
-- Frictionless navigation: Minimal clicks to value, clear pathways back
+- Immersive content showcase with large visuals
+- Minimal UI chrome, maximum content visibility
+- Horizontal carousels for natural discovery flow
+- Smooth micro-interactions that delight
+- Dark mode as primary aesthetic with ambient lighting
+
+**Reference Pattern:**
+Netflix homepage structure: Large hero → horizontal content rows → persistent navigation
+
+---
+
+## Colors
+
+**Primary Palette:**
+- **Brand Teal:** #14B8A6 (primary actions, accents, focus states)
+- **Netflix Black:** #141414 (dark mode backgrounds, cards)
+- **Warm Cream:** #FAF7F5 (light mode backgrounds)
+- **Neutral Grays:** #9CA3AF (metadata), #6B7280 (secondary text), #E5E7EB (borders)
+
+**Dark Mode (Primary):**
+- Background: #141414
+- Card backgrounds: #1F1F1F
+- Ambient glow: rgba(20, 184, 166, 0.15) around hovered cards
+- Text: #FFFFFF (primary), #D1D5DB (secondary)
+
+**Light Mode:**
+- Background: #FAF7F5
+- Card backgrounds: #FFFFFF
+- Text: #1F2937 (primary), #6B7280 (secondary)
+
+**Interactive States:**
+- Hover: Teal glow, scale transforms
+- Active: Darker teal (#0F766E)
+- Focus: ring-2 ring-teal-500 ring-offset-2
 
 ---
 
 ## Typography
 
 **Font Stack:**
-- **Primary:** Inter (via Google Fonts CDN) - Clean, highly legible for dense information
-- **Accent:** Source Serif 4 (via Google Fonts CDN) - For article titles, academic credibility
+- **Primary:** Inter (Google Fonts) - UI, body text, metadata
+- **Display:** Source Serif 4 (Google Fonts) - Article titles, hero headlines
 
 **Hierarchy:**
-- Hero/Page Titles: 3xl to 5xl, font-bold, Source Serif 4
-- Section Headers: xl to 2xl, font-semibold, Inter
-- Article Titles: lg to xl, font-medium, Source Serif 4
-- Body Text: base to lg, font-normal, Inter, leading-relaxed
-- Metadata/Labels: sm to base, font-medium, Inter, tracking-wide uppercase
+- Hero Headlines: 4xl to 6xl, font-bold, Source Serif 4
+- Section Headers: xl to 3xl, font-semibold, Inter
+- Article Titles: lg to 2xl, font-medium, Source Serif 4
+- Body Text: base to lg, Inter, leading-relaxed
+- Metadata: sm, font-medium, Inter, tracking-wide, uppercase, text-gray-500
 
 ---
 
 ## Layout System
 
 **Spacing Primitives:**
-Core spacing units: **2, 4, 6, 8, 12, 16** (as in p-2, gap-4, space-y-6, etc.)
-- Micro spacing: 2, 4 (within components)
-- Standard spacing: 6, 8 (between elements)
-- Section spacing: 12, 16 (between major sections)
+Core units: **4, 6, 8, 12, 16, 20**
+- Component internals: 4, 6
+- Between elements: 8, 12
+- Section spacing: 16, 20
 
 **Container Strategy:**
-- Extension Button: Fixed positioning, bottom-right or integrated into site nav
-- Web App: max-w-7xl centered container with px-6 for content areas
-- Reading width: max-w-3xl for article content/descriptions
-
-**Grid Patterns:**
-- Article cards: grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6
-- Content sections: Single column for reading, multi-column for browsing
-- Dashboard widgets: grid-cols-1 lg:grid-cols-4 for stats/metrics
+- Full-bleed sections for hero and carousels
+- Content containers: max-w-7xl, px-6 lg:px-8
+- Reading width: max-w-4xl for article details
+- Horizontal scroll: snap-x snap-mandatory, pb-4 for scrollbar clearance
 
 ---
 
 ## Component Library
 
-### Browser Extension Button
-- **Floating Badge:** Fixed bottom-right (bottom-6 right-6), rounded-full, shadow-lg
-- **Brand Name:** MyScience
-**Integrated Nav Button:** Matches host site's navigation styling, subtle branded indicator
-- **Size:** 48px × 48px minimum (touch-friendly), 56px × 56px recommended
-- **Icon:** Heroicons "home" or "academic-cap" via CDN
-- **States:** Clear focus ring (ring-4), subtle scale on hover (scale-105)
-- **Label:** Hidden text for screen readers, tooltip on hover
+### Navigation
+- **Fixed header:** h-16, backdrop-blur-xl, bg-black/80 (dark) or bg-cream/80 (light)
+- **Logo left, search center, profile right**
+- Transparent on hero, solidifies on scroll
+- Z-index: 50
 
-### Personalized Home Page
+### Hero Section
+- **Height:** 80vh minimum, maintains aspect ratio
+- **Visual:** High-quality research imagery (abstract science visuals, lab environments, data visualizations)
+- **Layout:** Full-bleed background image with gradient overlay (from transparent to bg-black)
+- **Content overlay:** Left-aligned, max-w-2xl, positioned in lower-third
+- **Elements:** Category badge, headline (4xl-6xl Source Serif), 2-3 line description, CTA buttons with blurred backgrounds (backdrop-blur-md bg-white/10)
+- **Buttons:** Primary teal button + secondary ghost button, gap-4
 
-**Header Navigation:**
-- Logo/Brand mark (left), primary navigation (center), user profile trigger (right)
-- Height: 64px, border-b, sticky positioning
-- "Return to [Site]" button prominent in top-right (with back arrow icon)
+### Horizontal Carousels
+- **Section header:** 2xl font-semibold, mb-6
+- **Card layout:** flex gap-4, snap-start on each card, horizontal scroll with hidden scrollbar (scrollbar-hide)
+- **Card dimensions:** w-64 to w-80, aspect-video for thumbnails
+- **Grid fallback mobile:** grid-cols-2 gap-4 (no horizontal scroll on small screens)
 
-**Hero Section:**
-- Welcome message with user's name (if available)
-- Tagline: "Your personalized research feed"
-- Quick stats: Articles saved, recommendations available
-- Layout: Single column, py-12, max-w-4xl centered
-- No background image needed - clean, focused entry
+### Article Cards
+- **Large cards:** 280px × 420px, rounded-lg, overflow-hidden
+- **Thumbnail:** aspect-video or square, object-cover, high-quality research visuals
+- **Overlay:** Gradient from transparent to black on bottom third
+- **Hover state:** scale-105, shadow-2xl, glow effect (dark mode), duration-300
+- **Content:** Title (lg Source Serif), authors (sm), publication date
+- **Preview on hover:** Expand to show abstract preview (200ms delay)
 
-**Article Feed (Primary Content):**
-- Card-based layout with generous whitespace
-- Each card: Thumbnail/journal logo, title (Source Serif), authors, publication date, abstract preview (2-3 lines), action buttons
-- Card padding: p-6, rounded-lg, border, hover:shadow-md transition
-- Spacing: space-y-6 between cards
-
-**Sidebar Widgets (Desktop):**
-- Categories/Topics list
-- Recent activity timeline
-- Saved searches
-- Fixed on scroll, max-w-xs
-
-**Empty States:**
-- Friendly illustrations or icons
-- Clear call-to-action: "Connect your ORCID to get personalized recommendations"
-- Centered content, py-16
-
----
-
-## Accessibility Implementation
-
-**Focus Management:**
-- Extension button click moves focus to home page header
-- Return button restores focus to original trigger location
-- Skip links for keyboard navigation
-- All interactive elements: min-height 44px
-
-**ARIA Patterns:**
-- Extension button: role="button", aria-label="Open personalized research feed"
-- Return button: aria-label="Return to [site name]"
-- Loading states: aria-live="polite" for dynamic content
-- Article cards: Proper heading hierarchy (h2 for titles)
-
-**Keyboard Navigation:**
-- Tab order: Header → main content → sidebar
-- Escape key: Close modals, return to previous view
-- Arrow keys: Navigate article lists
-
----
-
-## Animations
-
-**Minimal, Purposeful Motion:**
-- Button hover: subtle scale (scale-105), duration-200
-- Card hover: shadow transition, duration-300
-- Page transitions: fade-in only, duration-200
-- Loading indicators: Simple spinner, no elaborate animations
+### Sidebar Navigation (Desktop)
+- **Fixed left:** w-16 collapsed, w-64 expanded on hover
+- **Icons:** Heroicons - home, bookmark, trending-up, cog
+- **Labels:** Fade in on expand, duration-200
 
 ---
 
 ## Images
 
-**Extension Button:** Icon-only (no images)
+**Hero Section:**
+Use striking, high-resolution research imagery:
+- Abstract data visualizations (particle physics, molecular structures)
+- Dynamic lab photography (pipettes, microscopes, experiments in action)
+- Colorful scientific imagery (brain scans, chemical reactions, space)
+Dimensions: 1920×1080 minimum, optimized WebP format
 
-**Web Application:**
-- **No hero image** - Content-first approach
-- **Journal/Publication Logos:** Small (40px × 40px) on article cards, rounded
-- **User Avatar:** 32px × 32px circle in navigation, placeholder if not available
-- **Empty State Illustrations:** Simple line art, max 200px width, centered
+**Article Thumbnails:**
+Every article card includes visual thumbnail:
+- Journal cover artwork
+- Paper's featured figure/diagram
+- Field-specific stock imagery as fallback
+Dimensions: 640×360 for video aspect, 400×400 for square cards
 
-**Article Thumbnails:** 
-- Optional depending on source data availability
-- If used: aspect-ratio-video (16:9), object-cover, max-height 180px on cards
-- Placeholder: Simple pattern or journal logo if no thumbnail available
+**Background Treatments:**
+Subtle ambient backgrounds in dark mode - soft gradients, noise textures
 
 ---
 
-## Key Considerations
+## Animations
 
-**Cross-Site Consistency:** Extension button must feel native to each host site while maintaining subtle brand identity
+**Micro-Interactions (Essential to Experience):**
+- **Card hover:** scale-105 + shadow-2xl + glow, duration-300, ease-out
+- **Carousel scroll:** smooth-scroll, snap alignment
+- **Hero parallax:** Subtle background shift on scroll (20-30% speed difference)
+- **Loading states:** Skeleton screens with shimmer effect
+- **Page transitions:** Fade + slight upward slide (opacity + translate-y-4), duration-400
 
-**Return Mechanism:** Clear, persistent "Return to [original site]" navigation - never trap users
+**Dark Mode Ambient Effects:**
+- Glow around hovered cards: shadow-[0_0_40px_rgba(20,184,166,0.3)]
+- Subtle pulse on active carousel indicators
 
-**Progressive Enhancement:** Core functionality works without JavaScript; enhanced features layer on top
+---
 
-**Performance:** Lazy load article cards, virtualize long lists, optimize for scientific images/PDFs
+## Accessibility
 
-**Trust Signals:** Academic design language, clear data sourcing, transparent about personalization algorithms
+**Keyboard Navigation:**
+- Horizontal carousels: Arrow keys navigate cards, Home/End to bounds
+- Focus indicators: Prominent teal ring (ring-2 ring-teal-500)
+- Skip links: "Skip to main content," "Skip carousel"
+
+**Screen Readers:**
+- Carousel controls: aria-label, aria-live for dynamic updates
+- Card content: Proper heading hierarchy (h2 for titles)
+- Image descriptions: Descriptive alt text for all thumbnails
+
+**Interactive Elements:**
+- Minimum 44×44px touch targets
+- Focus visible on all interactive elements
+- Reduced motion: Disable parallax and scale effects via prefers-reduced-motion
+
+---
+
+## Key Experience Notes
+
+**Discovery Flow:** Hero → Featured carousel → Category carousels → Personalized recommendations
+
+**Content Density:** Dense, browsable layout prioritizing visual discovery over text
+
+**Performance:** Lazy load carousel content, intersection observer for animations, optimize images
+
+**Trust Signals:** Subtle journal badges, peer-review indicators, citation metrics
